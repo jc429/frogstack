@@ -8,7 +8,7 @@ using System.Runtime.Serialization.Formatters.Binary;
 
 public static class LevelManager {
 	public const int numWorlds = 3; 
-	public const int levelsPerWorld = 8;
+	public const int levelsPerWorld = 12;
 	const int levelOffset = 2;	//how many scenes are before level 1 in the game
 
 	public static LevelData levelData;

@@ -12,17 +12,17 @@ public class MainMenuController : MonoBehaviour {
 	public RectTransform titleCard;
 
 	Vector3 titleCardActivePos = Vector3.zero;
-	Vector3 titleCardInactivePos = new Vector3(1500, 0);
+	Vector3 titleCardInactivePos = new Vector3(375, 0);
 
-	Vector3 levelsSidebarActivePos = new Vector3(-640, 0);
-	Vector3 levelsSidebarInactivePos = new Vector3(-1220, 0);
+	Vector3 levelsSidebarActivePos = new Vector3(-150, 0);
+	Vector3 levelsSidebarInactivePos = new Vector3(-305, 0);
 
-	Vector3 levelsAreaActivePos = new Vector3(640,0);
-	Vector3 levelsAreaInactivePos = new Vector3(640, -1000);
+	Vector3 levelsAreaActivePos = new Vector3(164,0);
+	Vector3 levelsAreaInactivePos = new Vector3(164, -250);
 
 	bool animating;
-	bool atMainMenu;
-	float animTime;
+	bool atTitleScreen;
+	float animTime = 0;
 	const float animDuration = 0.2f;
 
 
@@ -40,7 +40,7 @@ public class MainMenuController : MonoBehaviour {
 		titleCard.localPosition = titleCardActivePos;
 		levelsSidebar.localPosition = levelsSidebarInactivePos;
 		levelsArea.localPosition = levelsAreaInactivePos;
-		atMainMenu = true;
+		atTitleScreen = true;
 		UpdateLevelInfo();
 		SelectLevel(1,1);
 	}
@@ -48,61 +48,62 @@ public class MainMenuController : MonoBehaviour {
 	// Update is called once per frame
 	void Update() {
 		if (transitioning) {
-			if (GameManager.managerInstance.screenTransition != null && GameManager.managerInstance.screenTransition.transitionDone) {
+			if (GameManager.TransitionDone()) {
 				transitioning = false;
 				GoToSelectedLevel();
 			}
 		}
 		if (animating) {
-			if (atMainMenu) {
+			if (atTitleScreen) {
+			//	Debug.Log(titleCard.localPosition);
 				animTime += Time.deltaTime;
-				if (titleCard.localPosition != titleCardInactivePos) {
+				if (!PMath.CloseTo(titleCard.localPosition, titleCardInactivePos)) {
 					titleCard.localPosition = Vector3.Lerp(titleCardActivePos, titleCardInactivePos, animTime / animDuration);
-					if (animTime > animDuration) {
+					if (animTime >= animDuration) {
 						animTime = 0;
 						titleCard.localPosition = titleCardInactivePos;
 					}
 				}
-				else if (levelsArea.localPosition != levelsAreaActivePos) {
+				else if (!PMath.CloseTo(levelsArea.localPosition, levelsAreaActivePos)){
 					levelsArea.localPosition = Vector3.Lerp(levelsAreaInactivePos, levelsAreaActivePos, animTime / animDuration);
 					if (animTime > animDuration) {
 						animTime = 0;
 						levelsArea.localPosition = levelsAreaActivePos;
 					}
 				}
-				else if(levelsSidebar.localPosition != levelsSidebarActivePos){
+				else if(!PMath.CloseTo(levelsSidebar.localPosition, levelsSidebarActivePos)){
 					levelsSidebar.localPosition = Vector3.Lerp(levelsSidebarInactivePos, levelsSidebarActivePos, animTime / animDuration);
 					if (animTime > animDuration) {
 						animTime = 0;
 						levelsSidebar.localPosition = levelsSidebarActivePos;
 						animating = false;
-						atMainMenu = false;
+						atTitleScreen = false;
 					}
 				}
 			}
 			else {
 				animTime += Time.deltaTime;
-				if (levelsSidebar.localPosition != levelsSidebarInactivePos) {
+				if (!PMath.CloseTo(levelsSidebar.localPosition, levelsSidebarInactivePos)){
 					levelsSidebar.localPosition = Vector3.Lerp(levelsSidebarActivePos, levelsSidebarInactivePos, animTime / animDuration);
 					if (animTime > animDuration) {
 						animTime = 0;
 						levelsSidebar.localPosition = levelsSidebarInactivePos;
 					}
 				}
-				else if (levelsArea.localPosition != levelsAreaInactivePos) {
+				else if (!PMath.CloseTo(levelsArea.localPosition, levelsAreaInactivePos)){
 					levelsArea.localPosition = Vector3.Lerp(levelsAreaActivePos, levelsAreaInactivePos, animTime / animDuration);
 					if (animTime > animDuration) {
 						animTime = 0;
 						levelsArea.localPosition = levelsAreaInactivePos;
 					}
 				}
-				else if (titleCard.localPosition != titleCardActivePos) {
+				else if (!PMath.CloseTo(titleCard.localPosition, titleCardActivePos)){
 					titleCard.localPosition = Vector3.Lerp(titleCardInactivePos, titleCardActivePos, animTime / animDuration);
 					if (animTime > animDuration) {
 						animTime = 0;
 						titleCard.localPosition = titleCardActivePos;
 						animating = false;
-						atMainMenu = true;
+						atTitleScreen = true;
 					}
 				}
 			}
@@ -130,7 +131,8 @@ public class MainMenuController : MonoBehaviour {
 			return;
 		}
 		Debug.Log("Selected level " + selectedWorld + "-" + selectedLevel);
-		GameManager.managerInstance.screenTransition.StartTransitionOut();
+		
+		GameManager.StartScreenTransitionOut();
 		transitioning = true;
 	}
 

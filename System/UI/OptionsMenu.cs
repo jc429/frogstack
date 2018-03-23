@@ -28,7 +28,8 @@ public class OptionsMenu : MonoBehaviour {
 	}
 
 	public void SetVolume(float vol) {
-		AudioListener.volume = vol;
+		
+		AudioListener.volume = 0.25f*vol;
 	}
 
 	public void SetMute(bool muted) {

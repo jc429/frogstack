@@ -4,7 +4,7 @@ using UnityEngine.UI;
 
 public class LevelPagesManager : MonoBehaviour {
 	RectTransform _rectTransform;
-	const int pageSeparation = 1800;
+	const int pageSeparation = 1800/4;
 	public RectTransform[] levelPages;
 	public int selectedPage = 0;
 	Vector3 startingPosition;
@@ -13,10 +13,11 @@ public class LevelPagesManager : MonoBehaviour {
 	public Button forwardButton;
 	public Button playButton;
 
+	Vector3 moveSrc;
 	Vector3 moveDest;
 	bool moving;
 	float moveTime;
-	const float moveDuration = 1;
+	const float moveDuration = 0.6f;
 
 	void Awake() {
 		_rectTransform = GetComponent<RectTransform>();
@@ -33,7 +34,7 @@ public class LevelPagesManager : MonoBehaviour {
 		int pagepos = 0;
 		foreach (RectTransform page in levelPages) {
 			if (page == null) continue;
-			page.localPosition = new Vector3(pagepos+492, 0);
+			page.localPosition = new Vector3(pagepos, 9);
 			pagepos += pageSeparation;
 		}
 	//	_rectTransform.localPosition = Vector3.zero;
@@ -48,10 +49,13 @@ public class LevelPagesManager : MonoBehaviour {
 			backButton.interactable = false;
 			forwardButton.interactable = false;
 			moveTime += Time.deltaTime;
-			_rectTransform.localPosition = Vector3.Lerp(_rectTransform.localPosition, moveDest, moveTime / moveDuration);
+			_rectTransform.localPosition = Vector3.Lerp(moveSrc, moveDest, moveTime / moveDuration);
 			if (moveTime >= moveDuration) {
 				_rectTransform.localPosition = moveDest;
 				moving = false;
+			playButton.interactable = true;
+			backButton.interactable = (selectedPage > 0);
+			forwardButton.interactable = (selectedPage < levelPages.Length - 1);
 			//	MainMenuController.controllerInstance.SelectLevel(levelPages[selectedPage].GetComponent<LevelPage>().worldID, 1);
 			}
 		}
@@ -70,6 +74,7 @@ public class LevelPagesManager : MonoBehaviour {
 			return;
 		selectedPage += dir;
 
+		moveSrc = _rectTransform.localPosition;
 		moveDest = startingPosition + new Vector3(-1 * pageSeparation * selectedPage, 0);
 		moveTime = 0;
 		moving = true;

@@ -11,17 +11,19 @@ enum SceneDest {
 	SD_GameEnd,
 };
 public class GameManager : MonoBehaviour {
+	public static float _levelCeiling = 10;
+	public static bool _allowFrogClicking = true;
+	const bool ERASE_ALL_DATA_ON_START = true;
+
 	public AudioManager audioManager;
 
 	SceneDest sceneDest;
-	bool transitioning;
+	bool sceneTransitioning;
 
-	bool ERASE_ALL_DATA_ON_START = false;
-
-	public Score score;
+	public FrogCounter frogCounter;
 	public GameObject frogPrefab;
 	public static GameManager managerInstance;
-	public ScreenTransition screenTransition;
+	ScreenTransition screenTransition;
 	public int frogCount;
 	public int hopCount;
 
@@ -74,7 +76,7 @@ public class GameManager : MonoBehaviour {
 		else {
 			Time.timeScale = 1;
 		}
-		if (transitioning) {
+		if (sceneTransitioning) {
 			if (screenTransition.FadedOut()) {
 				ClearFrogs();	
 				switch(sceneDest){
@@ -100,7 +102,7 @@ public class GameManager : MonoBehaviour {
 					default:
 						break;
 				}
-				transitioning = false;
+				sceneTransitioning = false;
 				sceneDest = SceneDest.SD_Null;
 			}
 		}
@@ -113,14 +115,14 @@ public class GameManager : MonoBehaviour {
 			//	Debug.Log("arg");
 				SpawnFrog();
 			}
-			if (currentFrog != null && !currentFrog.isUnderwater) {
-				if (Input.GetKeyDown(KeyCode.W) && currentFrog.stackAbove != null) {
+			if (currentFrog != null && !currentFrog.IsInMotion() && !currentFrog.isUnderwater) {
+				if ((Input.GetKeyDown(KeyCode.W)||Input.GetKeyDown(KeyCode.UpArrow)) && currentFrog.stackAbove != null) {
 					FrogMovement fm = currentFrog.stackAbove.GetComponent<FrogMovement>();
 					if (fm != null) {
 						SetCurrentFrog(fm);
 					}
 				}
-				else if (Input.GetKeyDown(KeyCode.S) && currentFrog.stackBelow != null) {
+				else if ((Input.GetKeyDown(KeyCode.S)||Input.GetKeyDown(KeyCode.DownArrow)) && currentFrog.stackBelow != null) {
 					FrogMovement fm = currentFrog.stackBelow.GetComponent<FrogMovement>();
 					if (fm != null) {
 						SetCurrentFrog(fm);
@@ -177,10 +179,12 @@ public class GameManager : MonoBehaviour {
 	//	Debug.Log("BOOP?");
 		currentFrog = Instantiate<GameObject>(frogPrefab).GetComponent<FrogMovement>();
 		currentFrog.transform.position = spawnPos;
-		frogCount = (oldFrogs.Count + 1);
+		UpdateFrogCounter(oldFrogs.Count + 1);
 		spawnTimer = spawnCooldown;
 		currentFrog.ActivateFrog();
 		SetCurrentFrog(currentFrog);
+
+
 	}
 
 	void ClearFrogs() {
@@ -199,9 +203,11 @@ public class GameManager : MonoBehaviour {
 
 	public void SetCurrentFrog(FrogMovement f) {
 		if (currentFrog != f) {
-			currentFrog.DeactivateFrog();
-			if (!oldFrogs.Contains(currentFrog)) {
-				oldFrogs.Add(currentFrog);
+			if(currentFrog != null){
+				currentFrog.DeactivateFrog();
+				if (!oldFrogs.Contains(currentFrog)) {
+					oldFrogs.Add(currentFrog);
+				}
 			}
 			currentFrog = f;
 			f.ActivateFrog();
@@ -225,6 +231,14 @@ public class GameManager : MonoBehaviour {
 		cursor.SetActive(true);
 	}
 
+
+	void UpdateFrogCounter(int num){
+		frogCount = num;
+		if(frogCounter != null){
+			frogCounter.UpdateFrogCount(frogCount);
+		}
+	}
+
 	public void AddNoSpawnZone(NoSpawn nsp){
 		noSpawnZones.Add(nsp);
 	}
@@ -241,7 +255,24 @@ public class GameManager : MonoBehaviour {
 
 
 	public static bool IsTransitioning() {
-		return managerInstance.transitioning || managerInstance.screenTransition.FadedOut();
+		if(managerInstance.screenTransition == null){
+			return false;
+		}
+		return managerInstance.sceneTransitioning || managerInstance.screenTransition.FadedOut();
+	}
+
+	public static void StartScreenTransitionOut(){
+		if(managerInstance.screenTransition != null){
+			managerInstance.screenTransition.StartTransitionOut();
+		}
+	}
+
+	public static bool TransitionDone(){
+		return(managerInstance.screenTransition != null && managerInstance.screenTransition.transitionDone);
+	}
+	
+	public void SetScreenTransition(ScreenTransition st){
+		screenTransition = st;
 	}
 
 
@@ -262,10 +293,10 @@ public class GameManager : MonoBehaviour {
 		}
 		if (screenTransition != null) {
 			screenTransition.StartTransitionOut();
-			transitioning = true;
+			sceneTransitioning = true;
 			sceneDest = SceneDest.SD_CurrentScene;
 		}
-		else if(!transitioning)
+		else if(!sceneTransitioning)
 			SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
 
 	}
@@ -277,7 +308,7 @@ public class GameManager : MonoBehaviour {
 		}
 		if (screenTransition != null) {
 			screenTransition.StartTransitionOut();
-			transitioning = true;
+			sceneTransitioning = true;
 			
 			sceneDest = SceneDest.SD_NextScene;
 
@@ -301,7 +332,7 @@ public class GameManager : MonoBehaviour {
 		}
 		if (screenTransition != null) {
 			screenTransition.StartTransitionOut();
-			transitioning = true;
+			sceneTransitioning = true;
 			sceneDest = SceneDest.SD_MainMenu;
 		}
 		else

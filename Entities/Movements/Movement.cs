@@ -20,6 +20,11 @@ public class Movement : GameEntity {
 	public bool checkBelow = true;
 	Vector3 posoffset;
 
+	const float rbDelay = 0.2f; 			//time to wait after unlinking before reactivating rigidbody physics
+	float rbDelayTimer = 0;
+
+	const float linkDelay = 0.1f;
+	float linkdelaytimer = 0;
 
 	// Use this for initialization
 	void Start () {
@@ -28,6 +33,26 @@ public class Movement : GameEntity {
 	
 	// Update is called once per frame
 	new protected void Update () {
+		if(rbDelayTimer > 0){
+			rbDelayTimer -= Time.deltaTime;
+			if(rbDelayTimer <= 0){
+				rbDelayTimer = 0;
+				Rigidbody r = GetComponent<Rigidbody>();
+				//dont activate rigidbody if we found a new attachment
+				if (r && stackBelow == null) {		
+					r.isKinematic = false;
+					r.velocity = Vector3.zero;
+				}
+			}
+		}
+
+		if(linkdelaytimer > 0){
+			linkdelaytimer -= Time.deltaTime;
+			if(linkdelaytimer <= 0){
+				linkdelaytimer = 0;
+			}
+		}
+
 		base.Update();
 		CheckStack();
 		if (StackMoving()) {
@@ -69,7 +94,7 @@ public class Movement : GameEntity {
 		else {
 			stackMask = fmask;
 		}
-		if (checkBelow && stackBelow == null && !moving) {
+		if (checkBelow && linkdelaytimer == 0 && stackBelow == null && !moving) {
 			if (Physics.Raycast(transform.position, Vector3.down, out r, raylen, stackMask)
 			/*&& !Physics.Raycast(transform.position, Vector3.down, out r, raylen, gmask)*/) {
 				Movement other = r.collider.GetComponent<Movement>();
@@ -91,7 +116,7 @@ public class Movement : GameEntity {
 					}
 					else {
 						Debug.DrawRay(transform.position, new Vector3(other.moveDir, 0), Color.white, raylen);
-						Debug.Log(other.moveDir);
+						//Debug.Log(other.moveDir);
 						stackBelow = other;
 						transform.parent = other.transform;
 						//	posoffset = transform.localPosition;
@@ -131,6 +156,7 @@ public class Movement : GameEntity {
 	//always unlinks downward, call from upper member of stack
 	public virtual void Unlink() {
 		if (stackBelow == null) {
+			Debug.Log("nothing to unlink");
 			return;
 		}
 		if (stackBelow.stackAbove == this) {
@@ -139,11 +165,9 @@ public class Movement : GameEntity {
 		transform.parent = null;
 		stackBelow = null;
 		posoffset = Vector3.zero;
-		Rigidbody r = GetComponent<Rigidbody>();
-		if (r) {
-			r.isKinematic = false;
-			r.velocity = Vector3.zero;
-		}
+		linkdelaytimer = linkDelay;
+		rbDelayTimer = rbDelay;
+		Debug.Log("Unlinked successfully");
 	/*	Debug.Log("Un-Linking " + dir.y);
 		if (dir.y > 0 && stackAbove != null) {
 		//	stackAbove.Unlink(Vector3.down);

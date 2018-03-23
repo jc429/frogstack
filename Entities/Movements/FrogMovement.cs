@@ -3,7 +3,7 @@ using System.Collections;
 
 public class FrogMovement : Movement {
 	public bool DEBUG;
-	const bool clickEnabled = true;
+	
 	//	float deadzone = 0.1f;
 	[Range(0.1f, 3)]
 	public float speedMultiplier = 1f;
@@ -14,10 +14,10 @@ public class FrogMovement : Movement {
 	FrogSounds _audio;
 
 	// hopping variables
-	Vector3 hopStart;
-	Vector3 hopEnd;
-	float hopDuration;				//total hop time
-	float hopTime;					//elapsed hop time
+	Vector3 hopStart;			//position to hop from
+	Vector3 hopEnd;				//position to land at
+	float hopDuration;			//total hop time
+	float hopTime;				//elapsed hop time
 
 	public Vector3 targDir = Vector3.forward;
 	public Transform moveTarget = null;
@@ -109,6 +109,7 @@ public class FrogMovement : Movement {
 			if (!MovementLocked() && PMath.GetSign(mx) != 0) {
 				SetFacing(PMath.GetSign(mx));
 			}
+			StartHop(inputs);
 			/*
 			Vector3 v = PMath.RoundToInts(transform.position);
 			//if grounded and not moving, subtly slide to the nearest grid position
@@ -145,14 +146,13 @@ public class FrogMovement : Movement {
 				}
 			}*/
 			//else{
-			StartHop(inputs);
 			//}
 		}
 
 		if (moving) {
 			//transform.position = Vector3.MoveTowards(transform.position, target.position, movespeed);
 			BasicHop();
-
+			//Debug.Log(Time.deltaTime);
 			if (transform.position == hopEnd) {
 				//target = null;
 				moving = false;
@@ -173,11 +173,11 @@ public class FrogMovement : Movement {
 	public void StartHop(Vector2 inputs, bool scripted = false) {
 		Vector3 v = PMath.RoundToInts(transform.position);
 		//if grounded and not moving, subtly slide to the nearest grid position
-		if (Grounded() && !Stacked()) {
+		if (Grounded() && !stackBelow){
 			//v.y = transform.position.y;
-			transform.localPosition = Vector3.MoveTowards(transform.localPosition, v, 0.05f);
+			transform.position = Vector3.MoveTowards(transform.position, v, 0.05f);
 		}
-		else if (!Stacked()) {
+		else if (!stackBelow) {
 			Vector3 lp = (transform.localPosition);
 			lp.x = Mathf.Round(lp.x);
 			transform.localPosition = Vector3.MoveTowards(transform.localPosition, lp, 0.05f);
@@ -186,9 +186,20 @@ public class FrogMovement : Movement {
 			if (stackBelow != null && stackBelow.GetComponent<ConveyorMovement>() != null) {
 				ConveyorMovement cm = stackBelow.GetComponent<ConveyorMovement>();
 				if (cm.beltsTouching == 0 || cm.moveSpeed != 0) {
+					Debug.Log("we in motion");
 					return;
 				}
 			}
+			else if(stackBelow != null && !stackBelow.IsInMotion()){
+			//	Debug.Log("wtf");
+				Vector3 lp =  PMath.RoundToInts(transform.localPosition);
+				transform.localPosition = Vector3.MoveTowards(transform.localPosition, lp, 0.05f);
+			}
+		}
+
+		//if we're not the active frog, there's nothing left to do here 
+		if(!activeFrog){	
+			return;
 		}
 
 		if (isUnderwater) { //if the trigger is telling us we are underwater
@@ -207,13 +218,14 @@ public class FrogMovement : Movement {
 		if (inputs == Vector2.zero) {
 			return;
 		}
-	//	Debug.Log(inputs);
+		//Debug.Log(inputs);
 
-		if ((inputs.x != 0 || inputs.y != 0) && transform.position == v) {
-
+		if ((inputs.x != 0 || inputs.y != 0) && PMath.CloseTo(transform.position,v)) {
+			transform.position = v;
 			targDir = Vector3.zero;
 			//targDir.y = transform.position.y;
 
+			// set targdir to int values based on input axes 
 			if (inputs.x > 0)
 				targDir.x = 1;
 			if (inputs.x < 0)
@@ -233,7 +245,7 @@ public class FrogMovement : Movement {
 			if (scripted) {
 				canmove = true;
 			}
-
+			
 			if (canmove) {
 				swimming = isUnderwater;
 
@@ -256,10 +268,12 @@ public class FrogMovement : Movement {
 				}
 				
 				//if there is a solid wall in front of us, try to jump on top of it
-				if (Physics.Raycast(transform.position, new Vector3(targDir.x, 0, 0), raylen, gmask)) {
+				if (Physics.Raycast(hopStart, new Vector3(targDir.x, 0, 0), raylen, gmask)) {
 					//if not at the ceiling
-					if (!(transform.position.y > 4.5f)) {
+					if (!(transform.position.y > GameManager._levelCeiling)) {
+						//try hopping upward
 						targpos.y += 1;
+						
 						//if theres a solid wall directly above us, cancel the jump
 						if (Physics.Raycast(stacktop, Vector3.up, raylen, gmask)) {
 							targpos = hopStart;
@@ -268,18 +282,22 @@ public class FrogMovement : Movement {
 						else if (isUnderwater) {
 							swimming = false;
 						}
+					//	Debug.Log("Hopping up");
 					}
 					//if at the ceiling
 					else {
 						targpos = hopStart;
 					}
-					//if the wall in front of us is too tall to hop up
-					if (Physics.Raycast(stacktop + Vector3.up, new Vector3(targDir.x, 0, 0), raylen, gmask)) {
+					//if the wall in front of us is too tall to hop up, cancel the jump
+					//TODO: change to raycast for every frog in the stack 
+					if (Physics.Raycast(hopStart + Vector3.up, new Vector3(targDir.x, 0, 0), raylen, gmask)) {
 						targpos = hopStart;
+
 						if (isUnderwater) {
 							swimming = true;
 						}
 					}
+					
 				}
 				else if (!isUnderwater) {
 					//if the space in front of us is free, check if the space below that is free 
@@ -310,6 +328,9 @@ public class FrogMovement : Movement {
 						swimming = false;
 					}
 				}
+
+				AttemptStackMovement(hopStart,targpos - hopStart,raylen,gmask);
+
 				//Debug.Log("hop! " + (targpos - hopStart) + swimming);
 				if (targpos != hopStart) {
 					GameManager.managerInstance.hopCount++;
@@ -356,6 +377,8 @@ public class FrogMovement : Movement {
 				}
 			}
 		}
+		if(moving)
+			Debug.Log("Hop " + hopStart + " " + hopEnd + " " + hopTime + " " + hopDuration);
 	}
 
 	void BasicHop() {
@@ -394,9 +417,46 @@ public class FrogMovement : Movement {
 
 	}
 	
+	public int AttemptStackMovement(Vector3 hopStart, Vector3 movementDir, float raylen, LayerMask gmask){
+		if(movementDir.x == 0){
+			return 0;
+		}
+		Vector3 stacktop = hopStart + GetStackTop();
+		int stacknum = Mathf.RoundToInt(GetStackTop().y);
+		int breakpoint = 0;
+		bool stackbroken = false;
+		while(!stackbroken){
+			if(breakpoint > stacknum){
+				Debug.Log("stack top all clear");
+				break;
+			}
+			Vector3 raystart = hopStart + new Vector3(0,breakpoint);
+			if(movementDir.y > 0){
+				raystart.y += 1;
+				Debug.Log("hop up");
+			}
+			if(Physics.Raycast(raystart,new Vector3(movementDir.x,0,0),raylen,gmask)){
+				stackbroken = true;
+				Debug.Log("stack broken at " + raystart);
 
+				Movement m = this;
+				for(int i = 0; i < breakpoint; i++){
+					m = m.stackAbove;
+					if(m == null){
+						break;
+					}
+				}
+				if(m != null){
+					m.Unlink();
+					
+				}
 
-	
+				break;
+			}
+			breakpoint++;
+		}
+		return breakpoint;
+	}
 
 	public void ActivateFrog() {
 		activeFrog = true;
@@ -419,7 +479,7 @@ public class FrogMovement : Movement {
 	}
 
 	void OnMouseDown() {
-		if (clickEnabled) {
+		if (GameManager._allowFrogClicking && !IsInMotion()) {
 			GameManager.managerInstance.SetCurrentFrog(this);
 		}
 	}

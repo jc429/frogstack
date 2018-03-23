@@ -32,7 +32,7 @@ public class ScreenTransition : MonoBehaviour {
 	// Use this for initialization
 	void Start() {
 		if (GameManager.managerInstance != null) {
-			GameManager.managerInstance.screenTransition = this;
+			GameManager.managerInstance.SetScreenTransition(this);
 			StartTransitionIn();
 		}
 		//transitionTime = 0;

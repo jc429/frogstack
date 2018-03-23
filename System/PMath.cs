@@ -25,4 +25,15 @@ public static class PMath {
 		v.z = Mathf.RoundToInt(v.z);
 		return v;
 	}
+	
+	public static bool CloseTo(Vector3 v1, Vector3 v2, float accuracy = 0.001f) {
+		if(Mathf.Abs(v1.x - v2.x) > accuracy)
+			return false;
+		if(Mathf.Abs(v1.y - v2.y) > accuracy)
+			return false;
+		if(Mathf.Abs(v1.z - v2.z) > accuracy)
+			return false;
+			
+		return true;
+	}
 }

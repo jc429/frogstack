@@ -11,6 +11,10 @@ public class NoSpawn : MonoBehaviour {
 		gameManager.AddNoSpawnZone(this);
 		objs = 0;
 	}
+
+	void Awake(){
+		
+	}
 	
 	// Update is called once per frame
 	void Update () {

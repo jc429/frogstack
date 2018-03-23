@@ -7,7 +7,7 @@ public class Score : MonoBehaviour {
 	Text text;
 	// Use this for initialization
 	void Start() {
-		GameManager.managerInstance.score = this;
+//		GameManager.managerInstance.score = this;
 		text = GetComponent<Text>();
 		//	text.color = PColor.CreateColor(255,255,180);
 	}
