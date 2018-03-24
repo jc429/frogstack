@@ -49,6 +49,7 @@ public class FrogMovement : Movement {
 
 	// Update is called once per frame
 	new void Update() {
+		
 		base.Update();
 		if (isUnderwater && !scriptLock && !activeFrog && Stable()) {
 			Poof();
@@ -110,43 +111,7 @@ public class FrogMovement : Movement {
 				SetFacing(PMath.GetSign(mx));
 			}
 			StartHop(inputs);
-			/*
-			Vector3 v = PMath.RoundToInts(transform.position);
-			//if grounded and not moving, subtly slide to the nearest grid position
-			if (Grounded() && !Stacked()) {
-				//v.y = transform.position.y;
-				transform.localPosition = Vector3.MoveTowards(transform.localPosition, v, 0.05f);
-			}
-			else if (!Stacked()) {
-				Vector3 lp = (transform.localPosition);
-				lp.x = Mathf.Round(lp.x);
-				transform.localPosition = Vector3.MoveTowards(transform.localPosition, lp, 0.05f);
-			}
-			else {
-				if (stackBelow != null && stackBelow.GetComponent<ConveyorMovement>() != null) {
-					ConveyorMovement cm = stackBelow.GetComponent<ConveyorMovement>();
-					if(cm.beltsTouching == 0 || cm.moveSpeed != 0)
-						return;
-				}
-			}
-			*/
-			/*if (activeFrog && inputs.y != 0 && !isUnderwater) {
-				if (Input.GetKeyDown(KeyCode.W) && stackAbove != null) {
-					//TODO: cursor immediately goes to top of stack when pressing up bc each successive frog becomes active - fix
-					FrogMovement fm = stackAbove.GetComponent<FrogMovement>();	
-					if (fm != null) {
-						GameManager.managerInstance.SetCurrentFrog(fm);
-					}
-				}
-				if (Input.GetKeyDown(KeyCode.S) && stackBelow != null) {
-					FrogMovement fm = stackBelow.GetComponent<FrogMovement>();
-					if (fm != null) {
-						GameManager.managerInstance.SetCurrentFrog(fm);
-					}
-				}
-			}*/
-			//else{
-			//}
+			
 		}
 
 		if (moving) {
@@ -186,12 +151,11 @@ public class FrogMovement : Movement {
 			if (stackBelow != null && stackBelow.GetComponent<ConveyorMovement>() != null) {
 				ConveyorMovement cm = stackBelow.GetComponent<ConveyorMovement>();
 				if (cm.beltsTouching == 0 || cm.moveSpeed != 0) {
-					Debug.Log("we in motion");
+					//Debug.Log("we in motion");
 					return;
 				}
 			}
 			else if(stackBelow != null && !stackBelow.IsInMotion()){
-			//	Debug.Log("wtf");
 				Vector3 lp =  PMath.RoundToInts(transform.localPosition);
 				transform.localPosition = Vector3.MoveTowards(transform.localPosition, lp, 0.05f);
 			}
@@ -333,7 +297,7 @@ public class FrogMovement : Movement {
 
 				//Debug.Log("hop! " + (targpos - hopStart) + swimming);
 				if (targpos != hopStart) {
-					GameManager.managerInstance.hopCount++;
+					GameManager.managerInstance.AddToHopCount();
 				}
 
 				if(stackAbove != null && targpos.x != hopStart.x){
@@ -369,7 +333,6 @@ public class FrogMovement : Movement {
 				}
 				stackBelow = null;
 				transform.parent = null;
-				//Debug.Log("'BANANA!' - Minion, 2017");
 				_rigidbody.isKinematic = false; //TODO: test if this fixes the "stuck in kinematic" issue when unstacking
 				moving = true;
 				if (!swimming) {
@@ -377,11 +340,13 @@ public class FrogMovement : Movement {
 				}
 			}
 		}
-		if(moving)
-			Debug.Log("Hop " + hopStart + " " + hopEnd + " " + hopTime + " " + hopDuration);
 	}
 
 	void BasicHop() {
+		if(Time.deltaTime > 0.1f){
+			Debug.Log("Time since last frame too long, ignoring frame (" + Time.deltaTime +")");
+			return;
+		}
 		float height = 0.5f;
 		hopTime += Time.deltaTime;
 		Vector3 currentPos = Vector3.Lerp(hopStart, hopEnd, hopTime / hopDuration);

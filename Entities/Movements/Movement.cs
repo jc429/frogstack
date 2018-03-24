@@ -20,7 +20,7 @@ public class Movement : GameEntity {
 	public bool checkBelow = true;
 	Vector3 posoffset;
 
-	const float rbDelay = 0.2f; 			//time to wait after unlinking before reactivating rigidbody physics
+	const float rbDelay = 0.01f; 			//time to wait after unlinking before reactivating rigidbody physics
 	float rbDelayTimer = 0;
 
 	const float linkDelay = 0.1f;

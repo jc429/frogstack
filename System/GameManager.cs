@@ -11,9 +11,9 @@ enum SceneDest {
 	SD_GameEnd,
 };
 public class GameManager : MonoBehaviour {
-	public static float _levelCeiling = 10;
-	public static bool _allowFrogClicking = true;
-	const bool ERASE_ALL_DATA_ON_START = true;
+	public static int _levelCeiling = 10;				//max height allowed 
+	public static bool _allowFrogClicking = true;		//allow player to click on frogs to switch control to them (debug tool)
+	const bool ERASE_ALL_DATA_ON_START = false;
 
 	public AudioManager audioManager;
 
@@ -21,11 +21,11 @@ public class GameManager : MonoBehaviour {
 	bool sceneTransitioning;
 
 	public FrogCounter frogCounter;
-	public GameObject frogPrefab;
-	public static GameManager managerInstance;
+	public GameObject frogPrefab;						//frog prefab (i.e. what we spawn/play as)
+	public static GameManager managerInstance;			//the active instance of the game manager
 	ScreenTransition screenTransition;
-	public int frogCount;
-	public int hopCount;
+	int frogCount;
+	int hopCount;
 
 	float spawnTimer;
 	float spawnCooldown = 0.2f;
@@ -239,6 +239,12 @@ public class GameManager : MonoBehaviour {
 		}
 	}
 
+	public void AddToHopCount(int ct = 1){
+		hopCount += ct;
+	}
+
+
+	//add a no-spawn zone to the list
 	public void AddNoSpawnZone(NoSpawn nsp){
 		noSpawnZones.Add(nsp);
 	}

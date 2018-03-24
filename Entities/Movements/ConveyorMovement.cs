@@ -58,6 +58,7 @@ public class ConveyorMovement : Movement {
 					v.x = xint;
 					transform.position = v;
 					if (stackAbove != null) {
+						Debug.Log("Peace");
 						stackAbove.Unlink();
 					}
 				//	Unlink(Vector3.up);
@@ -121,8 +122,7 @@ public class ConveyorMovement : Movement {
 		
 		moveSpeed = f;
 		stopAtInt = false;
-		Debug.Log("Speed: "+ f);
-	//	undeletable = 3;
+		//Debug.Log("Speed: "+ f);
 	}
 
 	void EndLife() {
