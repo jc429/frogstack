@@ -21,6 +21,10 @@ public class AudioManager : MonoBehaviour {
 		
 	}
 
+	public void SetTrack(AudioClip clip){
+		_audioSource.clip = clip;
+	}
+
 	// plays soundtrack via id num
 	public void PlayTrack(int num) {
 		if (num < 0 || num >= tracks.Length) {
@@ -35,6 +39,7 @@ public class AudioManager : MonoBehaviour {
 		_audioSource.clip = clip;
 		_audioSource.Play();
 	}
+
 
 	public void Stop() {
 		_audioSource.Stop();

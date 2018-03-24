@@ -10,12 +10,14 @@ enum SceneDest {
 	SD_MainMenu,
 	SD_GameEnd,
 };
+
+//TODO: Clean this bad boy UP 
 public class GameManager : MonoBehaviour {
 	public static int _levelCeiling = 10;				//max height allowed 
 	public static bool _allowFrogClicking = true;		//allow player to click on frogs to switch control to them (debug tool)
 	const bool ERASE_ALL_DATA_ON_START = false;
 
-	public AudioManager audioManager;
+	AudioManager audioManager;
 
 	SceneDest sceneDest;
 	bool sceneTransitioning;
@@ -59,7 +61,7 @@ public class GameManager : MonoBehaviour {
 
 		oldFrogs = new List<FrogMovement>();
 		noSpawnZones = new List<NoSpawn>();
-		audioManager = GetComponent<AudioManager>();
+		audioManager = GetComponentInChildren<AudioManager>();
 	}
 	void Start() {
 	//	screenTransition = GameObject.FindGameObjectWithTag("EffectsCamera").GetComponent<ScreenTransition>();
@@ -354,9 +356,9 @@ public class GameManager : MonoBehaviour {
 		currentFrog.GetComponent<FrogMovement>().LockMovement();
 	}
 
-	public void SetBGMSrc(BackgroundMusic src) {
-		bgm = src;
-	}
+	//public void SetBGMSrc(BackgroundMusic src) {
+	//	bgm = src;
+//	}
 	public void HaltBGM() {
 		audioManager.Stop();
 	}
@@ -374,6 +376,10 @@ public class GameManager : MonoBehaviour {
 		LevelManager.EraseAllLevelData();
 		LevelManager.LoadLevelData();
 		ResetLevel();
+	}
+
+	public static AudioManager GetAudioManager(){
+		return managerInstance.audioManager;
 	}
 }
 

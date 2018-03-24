@@ -59,7 +59,7 @@ public static class LevelManager {
 	/*	if (levelData.recordActions[curWorld, curLevel] > 0)
 			numactions = Mathf.Min(numactions, levelData.recordActions[curWorld, curLevel]);
 		levelData.recordActions[curWorld, curLevel] = numactions;*/
-		Debug.Log("Completed" + curWorld + "-" + curLevel);
+		Debug.Log("Completed " + curWorld + "-" + curLevel);
 		levelData.completedLevels[curWorld, curLevel] = true;
 		SaveLevelData();
 	}

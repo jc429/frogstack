@@ -112,7 +112,6 @@ public class ConveyorBelt : TriggeredObj {
 			cm.SetMoveSpeed(0);
 		}
 		cm.transform.position = m.transform.position + Vector3.down;
-	//	Debug.Log(cm.transform.position);
 		Debug.Log("STACK!");
 		//cm.CheckStack();
 		cm.CheckStack();

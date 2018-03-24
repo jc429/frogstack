@@ -8,7 +8,7 @@ public class BackgroundMusic : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
 		_audio = GetComponent<AudioSource>();
-		GameManager.managerInstance.SetBGMSrc(this);
+	//	GameManager.managerInstance.SetBGMSrc(this);
 	}
 	
 	// Update is called once per frame

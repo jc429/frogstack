@@ -392,18 +392,18 @@ public class FrogMovement : Movement {
 		bool stackbroken = false;
 		while(!stackbroken){
 			if(breakpoint > stacknum){
-				Debug.Log("stack top all clear");
+				//Debug.Log("stack top all clear");
 				break;
 			}
 			Vector3 raystart = hopStart + new Vector3(0,breakpoint);
 			if(movementDir.y > 0){
+				//if the stack is hopping upward, shift the raycasts up one tile
 				raystart.y += 1;
-				Debug.Log("hop up");
+				//Debug.Log("hop up");
 			}
 			if(Physics.Raycast(raystart,new Vector3(movementDir.x,0,0),raylen,gmask)){
 				stackbroken = true;
-				Debug.Log("stack broken at " + raystart);
-
+				//Debug.Log("stack broken at " + raystart);
 				Movement m = this;
 				for(int i = 0; i < breakpoint; i++){
 					m = m.stackAbove;
@@ -412,10 +412,8 @@ public class FrogMovement : Movement {
 					}
 				}
 				if(m != null){
-					m.Unlink();
-					
+					m.Unlink();				
 				}
-
 				break;
 			}
 			breakpoint++;

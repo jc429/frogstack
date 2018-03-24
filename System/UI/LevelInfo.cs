@@ -10,7 +10,7 @@ public class LevelInfo : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
 		if(bgm != null)
-			GameManager.managerInstance.audioManager.PlayTrack(bgm);
+			GameManager.GetAudioManager().PlayTrack(bgm);
 	}
 	
 	// Update is called once per frame
