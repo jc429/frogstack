@@ -16,18 +16,24 @@ public class GameManager : MonoBehaviour {
 	public static int _levelCeiling = 10;				//max height allowed 
 	public static bool _allowFrogClicking = true;		//allow player to click on frogs to switch control to them (debug tool)
 	const bool ERASE_ALL_DATA_ON_START = false;
-
+	
+	public static GameManager managerInstance;			//the active instance of the game manager
 	AudioManager audioManager;
 
-	SceneDest sceneDest;
-	bool sceneTransitioning;
+	ScreenTransition screenTransition;					//transition camera
+	SceneDest sceneDest;								//scene to transition to
+	bool sceneTransitioning;							//are we transitioning?
 
-	public FrogCounter frogCounter;
+	FrogCounter frogCounter;							//UI keeping track of the frogs
 	public GameObject frogPrefab;						//frog prefab (i.e. what we spawn/play as)
-	public static GameManager managerInstance;			//the active instance of the game manager
-	ScreenTransition screenTransition;
+	Vector3 spawnPos;									//position to spawn frogs at
+	
 	int frogCount;
 	int hopCount;
+	public GameObject cursorPrefab;						//cursor that hovers over the currently controlled frog
+	GameObject cursorInstance;
+
+	static float hopspeed = 1;							//how fast frogs hop
 
 	float spawnTimer;
 	float spawnCooldown = 0.2f;
@@ -35,15 +41,13 @@ public class GameManager : MonoBehaviour {
 	List<FrogMovement> oldFrogs;
 	List<NoSpawn> noSpawnZones;
 
-	public Vector3 spawnPos;
+	
 
-	public BackgroundMusic bgm;
 	public PauseMenu pauseMenu;
 	public OptionsMenu optionsMenu;
 	public bool paused;
 
-	public GameObject cursorPrefab;
-	GameObject cursor;
+	
 	// Use this for initialization
 	void Awake() {
 		if (managerInstance == null) {
@@ -216,21 +220,21 @@ public class GameManager : MonoBehaviour {
 			if (oldFrogs.Contains(currentFrog)) {
 				oldFrogs.Remove(currentFrog);
 			}
-			if (cursor != null) {
-				cursor.GetComponent<AudioSource>().Play();
+			if (cursorInstance != null) {
+				cursorInstance.GetComponent<AudioSource>().Play();
 			}
 		}
-		if (cursor == null) {
+		if (cursorInstance == null) {
 			if (cursorPrefab == null) {
 				Debug.Log("Error: no cursor prefab");
 				return;
 			}
-			cursor = GameObject.Instantiate(cursorPrefab);
+			cursorInstance = GameObject.Instantiate(cursorPrefab);
 		}
 
-		cursor.transform.parent = currentFrog.transform;
-		cursor.transform.localPosition = Vector3.zero;
-		cursor.SetActive(true);
+		cursorInstance.transform.parent = currentFrog.transform;
+		cursorInstance.transform.localPosition = Vector3.zero;
+		cursorInstance.SetActive(true);
 	}
 
 
@@ -299,6 +303,12 @@ public class GameManager : MonoBehaviour {
 		if (currentFrog != null) {
 			currentFrog.GetComponent<FrogMovement>().LockMovement();
 		}
+
+		//cleanup
+		noSpawnZones.Clear();
+		oldFrogs.Clear();	
+
+
 		if (screenTransition != null) {
 			screenTransition.StartTransitionOut();
 			sceneTransitioning = true;
@@ -363,12 +373,16 @@ public class GameManager : MonoBehaviour {
 		audioManager.Stop();
 	}
 
-	public static float hopspeed = 1;
+	
 	public static void SetHopSpeed(float speed) {
 		hopspeed = Mathf.Clamp(speed, 0.5f, 3);
 		if (managerInstance.currentFrog != null) {
 			managerInstance.currentFrog.GetComponent<FrogMovement>().SetHopSpeed(hopspeed);
 		}
+	}
+
+	public static float GetHopSpeed(){
+		return hopspeed;
 	}
 
 	public void ClearAllData() {
@@ -380,6 +394,10 @@ public class GameManager : MonoBehaviour {
 
 	public static AudioManager GetAudioManager(){
 		return managerInstance.audioManager;
+	}
+
+	public static void SetFrogCounter(FrogCounter fc){
+		managerInstance.frogCounter = fc;
 	}
 }
 

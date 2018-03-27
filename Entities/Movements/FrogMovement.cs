@@ -2,7 +2,7 @@
 using System.Collections;
 
 public class FrogMovement : Movement {
-	public bool DEBUG;
+	public bool DEBUG_LOCK_MOVEMENT;
 	
 	//	float deadzone = 0.1f;
 	[Range(0.1f, 3)]
@@ -38,10 +38,10 @@ public class FrogMovement : Movement {
 		}
 		_sprite.flipX = (facing < 0);
 
-		SetHopSpeed(GameManager.hopspeed);
+		SetHopSpeed(GameManager.GetHopSpeed());
 		watersTouching = 0;
 
-		if (DEBUG) {
+		if (DEBUG_LOCK_MOVEMENT) {
 			DeactivateFrog();
 		}
 

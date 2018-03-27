@@ -21,7 +21,7 @@ public class FrogCounter : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
 		_rtransform = GetComponent<RectTransform>();
-		GameManager.managerInstance.frogCounter = this;
+		GameManager.SetFrogCounter(this);
 		
 		if(lockPosition){
 			_rtransform.localPosition = inPos;

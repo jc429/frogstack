@@ -20,6 +20,7 @@ public class Movement : GameEntity {
 	public bool checkBelow = true;
 	Vector3 posoffset;
 
+	//ok so this needs to be .2f for hopping stacks, but ignored/very short for stuff like conveyor belts :thinking:
 	const float rbDelay = 0.01f; 			//time to wait after unlinking before reactivating rigidbody physics
 	float rbDelayTimer = 0;
 
