@@ -2,16 +2,20 @@
 using System.Collections;
 
 public class FrogMovement : Movement {
-	public bool DEBUG_LOCK_MOVEMENT;
+	[SerializeField]
+	bool DEBUG_LOCK_MOVEMENT;
 	
 	//	float deadzone = 0.1f;
+	const float basicHopTime = 0.25f;
 	[Range(0.1f, 3)]
 	public float speedMultiplier = 1f;
-	const float basicHopTime = 0.25f;
 
 	Rigidbody _rigidbody;
 	SpriteRenderer _sprite;
 	FrogSounds _audio;
+
+	[SerializeField]	
+	GameObject smokePrefab;		//when a frog dies this shows up
 
 	// hopping variables
 	Vector3 hopStart;			//position to hop from
@@ -20,7 +24,8 @@ public class FrogMovement : Movement {
 	float hopTime;				//elapsed hop time
 
 	public Vector3 targDir = Vector3.forward;
-	public Transform moveTarget = null;
+	[SerializeField]
+	Transform moveTarget = null;
 	float inputTimer = 0;					//how long you have been holding a direction
 	const float inputThreshold = 0.08f;		//how long you need to be holding a direction to move instead of turn
 	int moveHoldTimer = 0;					//briefly used to pause movement so you "stick" to a tile for a moment like an irl frog
@@ -29,7 +34,8 @@ public class FrogMovement : Movement {
 	bool activeFrog;
 
 	// Use this for initialization
-	void Start() {
+	new void Start() {
+		base.Start();
 		_audio = GetComponent<FrogSounds>();
 		_rigidbody = GetComponent<Rigidbody>();
 		_rigidbody.freezeRotation = true;
@@ -215,7 +221,7 @@ public class FrogMovement : Movement {
 
 				hopStart = transform.position;
 				Vector3 targpos = hopStart + new Vector3(targDir.x, targDir.y, targDir.z);
-				Vector3 stacktop = hopStart + GetStackTop();
+				Vector3 stacktop = hopStart + DistanceToStackTop();
 
 				//raycast to check if we're gonna hit something solid
 				LayerMask gmask = Layers.GetGroundMask(true);
@@ -240,6 +246,7 @@ public class FrogMovement : Movement {
 						
 						//if theres a solid wall directly above us, cancel the jump
 						if (Physics.Raycast(stacktop, Vector3.up, raylen, gmask)) {
+							Debug.Log("owie oof");
 							targpos = hopStart;
 						}
 						//TODO: make this jump not take place underwater
@@ -248,7 +255,7 @@ public class FrogMovement : Movement {
 						}
 					//	Debug.Log("Hopping up");
 					}
-					//if at the ceiling
+					//if at the ceiling, we're not allowed to move
 					else {
 						targpos = hopStart;
 					}
@@ -291,6 +298,13 @@ public class FrogMovement : Movement {
 						targpos.y -= 1;
 						swimming = false;
 					}
+				}
+
+				
+				//if there are falling frogs between us and our destination, cancel the hop until theyre gone
+				if(!CheckValidMove(hopStart,targpos)){
+					targpos = hopStart;
+					return;
 				}
 
 				AttemptStackMovement(hopStart,targpos - hopStart,raylen,gmask);
@@ -370,7 +384,6 @@ public class FrogMovement : Movement {
 		hopDuration = (1 / speedMultiplier) * basicHopTime;
 	}
 
-	public GameObject smokePrefab;
 	public void Poof() {
 		GameObject smoke = GameObject.Instantiate(smokePrefab);
 		smoke.transform.position = this.transform.position;
@@ -382,12 +395,28 @@ public class FrogMovement : Movement {
 
 	}
 	
+
+	bool CheckValidMove(Vector3 start, Vector3 end){
+		bool valid = true;
+		Debug.Log(end + "" + start);
+		int len = Mathf.RoundToInt(end.x - start.x);
+		for(int i = 0; i < Mathf.Abs(len); i++){
+			int n = Mathf.RoundToInt(start.x + (Mathf.Sign(len) * (1+i)));
+			Debug.Log(n);
+			if(!GameManager.managerInstance.CheckColumnFree(n)){
+				valid = false;
+				break;
+			}
+		}
+		return valid;
+	}
+
 	public int AttemptStackMovement(Vector3 hopStart, Vector3 movementDir, float raylen, LayerMask gmask){
 		if(movementDir.x == 0){
 			return 0;
 		}
-		Vector3 stacktop = hopStart + GetStackTop();
-		int stacknum = Mathf.RoundToInt(GetStackTop().y);
+		//Vector3 stacktop = hopStart + GetStackTop();
+		int stacknum = Mathf.RoundToInt(DistanceToStackTop().y);
 		int breakpoint = 0;
 		bool stackbroken = false;
 		while(!stackbroken){

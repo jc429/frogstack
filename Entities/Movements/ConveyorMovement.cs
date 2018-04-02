@@ -7,17 +7,17 @@ public class ConveyorMovement : Movement {
 
 
 	public int beltsTouching = 0;
-	public int undeletable = 3;
+	int undeletable = 3;
 	bool stopAtInt = false;
 
 	// Use this for initialization
-	void Start () {
+	new void Start () {
 		moving = (moveSpeed != 0);
 	}
 	
 	// Update is called once per frame
 	new void Update () {
-		//base.Update();
+		//base.Update();	//intentionally ignore base class functionality
 		moving = (moveSpeed != 0);
 		Vector3 origin = transform.position + Vector3.up;
 		LayerMask gmask = Layers.GetGroundMask(true);

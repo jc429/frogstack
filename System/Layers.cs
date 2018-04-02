@@ -11,7 +11,7 @@ public static class Layers {
 		groundmask |= 1 << 8;	//frogs
 		groundmask |= 1 << 10;	//invisible
 		if (!ignorePlatforms) {
-			groundmask |= 1 << 12;
+			groundmask |= 1 << 12;	//platforms
 		}
 		return groundmask;
 	}

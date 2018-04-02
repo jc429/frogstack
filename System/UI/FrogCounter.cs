@@ -64,6 +64,7 @@ public class FrogCounter : MonoBehaviour {
 			return;
 		}
 		if (_rtransform.localPosition == inPos) {
+			sustainTime = 0;
 			return;
 		}
 		if (moving) {

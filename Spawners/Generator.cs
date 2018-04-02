@@ -4,8 +4,8 @@ using UnityEngine;
 
 public class Generator : CycleObj {
 
-	public GameObject genObject;
-	
+	[SerializeField]
+	GameObject genObject;	
 	GameObject lastGenerated;
 
 	// Use this for initialization
@@ -26,5 +26,13 @@ public class Generator : CycleObj {
 		GameObject obj = GameObject.Instantiate(genObject);
 		obj.transform.position = this.transform.position;
 		lastGenerated = obj;
+	}
+
+	public void SetGenObj(GameObject obj){
+		genObject = obj;
+	}
+
+	public GameObject GetLastGenerated(){
+		return lastGenerated;
 	}
 }

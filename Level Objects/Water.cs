@@ -4,6 +4,12 @@ using UnityEngine;
 
 public class Water : MonoBehaviour {
 	
+	[SerializeField]
+	bool hasTide;
+	[SerializeField]
+	int tideUpper;
+	[SerializeField]
+	int tideLower;
 	// Use this for initialization
 	void Start () {
 		

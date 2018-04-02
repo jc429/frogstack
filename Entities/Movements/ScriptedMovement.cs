@@ -44,7 +44,7 @@ public class ScriptedMovement : MonoBehaviour {
 				return;
 			}
 		}
-		_frogMovement.facing = (int)steps[currentStep].x;
+		_frogMovement.SetFacing((int)steps[currentStep].x);
 		_frogMovement.StartHop(steps[currentStep], true);
 		currentStep++;
 	}

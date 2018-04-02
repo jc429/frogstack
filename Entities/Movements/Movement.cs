@@ -3,37 +3,57 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class Movement : GameEntity {
+	static bool showStackLog = false;
 	protected const float raylen = 0.75f;
 	LayerMask fmask = Layers.GetFrogMask();
 	LayerMask objmask = Layers.GetObjectMask();
-	public bool stackWithPuzzleObjects = false;
+
+	[SerializeField]
+	bool stackWithPuzzleObjects = false;		//whether or not to interact with certain things 
 
 	public bool moving;						//are we moving at all
 	bool moveLock;							//for externally locking movement
 	protected int moveDir;					//which direction are we moving in
-	public int facing = 1;
+	protected int facing = 1;
 
 
 	public Movement stackAbove;
 	public Movement stackBelow;
 	public bool checkAbove = true;
 	public bool checkBelow = true;
-	Vector3 posoffset;
 
-	//ok so this needs to be .2f for hopping stacks, but ignored/very short for stuff like conveyor belts :thinking:
+	// used for making the stack sway
+	bool sway = true;
+	Transform _sTransform; 
+	Vector3 curPos;
+	Vector3 prevpos;
+//	Vector3 posoffset;
+
+	//ok so this needs to be .2f for hopping stacks, but ignored/very short for stuff like conveyor belts 
 	const float rbDelay = 0.01f; 			//time to wait after unlinking before reactivating rigidbody physics
 	float rbDelayTimer = 0;
 
 	const float linkDelay = 0.1f;
 	float linkdelaytimer = 0;
 
+
 	// Use this for initialization
-	void Start () {
-		
+	protected void Start () {
+		SpriteRenderer s = gameObject.GetComponentInChildren<SpriteRenderer>();
+		if(s == null){
+			sway = false;
+			_sTransform = null;
+		}
+		else{
+			_sTransform = s.transform;
+		}
 	}
 	
 	// Update is called once per frame
 	new protected void Update () {
+		prevpos = curPos;
+		curPos = transform.position;
+
 		if(rbDelayTimer > 0){
 			rbDelayTimer -= Time.deltaTime;
 			if(rbDelayTimer <= 0){
@@ -74,14 +94,44 @@ public class Movement : GameEntity {
 		}
 		if(Stable() && stackBelow != null){
 			if(Mathf.Abs(transform.localPosition.x) >= 0.9f){
-				Debug.Log("safe to unlink");
+				if(showStackLog){
+					Debug.Log("safe to unlink");
+				}
 				transform.parent = null;
 			//	GetComponent<Rigidbody>().isKinematic = false;
 				stackBelow = null;	
 			 //	Unlink(Vector3.down);
 			}
 		}
-		
+		/*if(stackBelow != null){
+			Vector3 shift = transform.position;
+			shift.x = stackBelow.prevpos.x;
+			transform.position = shift;
+		}*/
+	}
+
+	void LateUpdate(){
+		Sway();
+	}
+
+	void Sway(){
+		if(stackBelow != null && sway){
+			//_sTransform.localPosition = new Vector3(-0.5f,0,0);
+			float height = Mathf.Abs(DistanceToStackBottom().y);
+			float offx = 0;
+			float offy = 0;
+			float snapSpeed = 3.5f;
+			if(StackMoving()){
+				offx = height * height * -0.05f * moveDir;
+				offx = Mathf.Clamp(offx,-0.5f,0.5f);
+			}
+			else{
+				snapSpeed = 3.5f;
+			}
+			
+			Vector3 sprShift = Vector3.MoveTowards(_sTransform.localPosition,new Vector3(offx,offy), snapSpeed*Time.deltaTime); 
+			_sTransform.localPosition = sprShift;
+		}
 	}
 
 	public void CheckStack() {
@@ -107,10 +157,11 @@ public class Movement : GameEntity {
 						transform.localPosition = Vector3.up;
 						//Debug.Log("a");
 						GetComponent<Rigidbody>().isKinematic = true;
-						Debug.Log("Linking Down, Stationary");
-						
-						other.stackAbove = this;
+						if(showStackLog){
+							Debug.Log("Linking Down, Stationary");
+						}
 
+						other.stackAbove = this;
 					}
 					else if (Physics.Raycast(transform.position, new Vector3(other.moveDir, 0), out r, raylen, gmask)) {
 						Debug.DrawRay(transform.position, new Vector3(other.moveDir, 0), Color.red, raylen);
@@ -124,13 +175,16 @@ public class Movement : GameEntity {
 						transform.localPosition = Vector3.up;
 						//Debug.Log("a");
 						GetComponent<Rigidbody>().isKinematic = true;
-						Debug.Log("Linking Down, Moving");
+						if(showStackLog){
+							Debug.Log("Linking Down, Moving");
+						}
+						other.stackAbove = this;
 					}
 					
 				}
 			}
 			else {
-				posoffset = Vector3.zero;
+			//	posoffset = Vector3.zero;
 				stackBelow = null;
 				transform.parent = null;
 			//	GetComponent<Rigidbody>().isKinematic = false;
@@ -165,10 +219,12 @@ public class Movement : GameEntity {
 		}
 		transform.parent = null;
 		stackBelow = null;
-		posoffset = Vector3.zero;
+	//	posoffset = Vector3.zero;
 		linkdelaytimer = linkDelay;
 		rbDelayTimer = rbDelay;
-		Debug.Log("Unlinked successfully");
+		if(showStackLog){
+			Debug.Log("Unlinked successfully");
+		}
 	/*	Debug.Log("Un-Linking " + dir.y);
 		if (dir.y > 0 && stackAbove != null) {
 		//	stackAbove.Unlink(Vector3.down);
@@ -240,7 +296,7 @@ public class Movement : GameEntity {
 	}
 
 	//returns a vector with distance (in stack objects) from current pos to stack top as Y component
-	public Vector3 GetStackTop() {
+	public Vector3 DistanceToStackTop() {
 		Vector3 v = Vector3.zero;
 		Movement m = this;
 		while (m.stackAbove != null) {
@@ -251,7 +307,7 @@ public class Movement : GameEntity {
 	}
 
 	//returns a vector with distance (in stack objects) from current pos to stack bottom as Y component
-	public Vector3 GetStackBottom() {
+	public Vector3 DistanceToStackBottom() {
 		Vector3 v = Vector3.zero;
 		Movement m = this;
 		while (m.stackBelow != null) {
@@ -262,7 +318,7 @@ public class Movement : GameEntity {
 	}
 
 
-
+	
 
 	public bool Grounded() {
 		bool groundboys;
@@ -297,7 +353,7 @@ public class Movement : GameEntity {
 			&& (stackBelow == null || stackBelow.GetComponent<ConveyorMovement>() == null));
 	}
 
-	protected void SetFacing(int f) {
+	public void SetFacing(int f) {
 		int toface = PMath.GetSign(f);
 		if (toface == 0) return;
 

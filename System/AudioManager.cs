@@ -3,13 +3,13 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class AudioManager : MonoBehaviour {
-	GameManager _gameManager;
+//	GameManager _gameManager;
 	public AudioClip[] tracks;
 	AudioSource _audioSource;
 
 	// Use this for initialization
 	void Awake () {
-		_gameManager = GetComponent<GameManager>();
+	//	_gameManager = GetComponentInParent<GameManager>();
 		_audioSource = GetComponent<AudioSource>();
 		_audioSource.playOnAwake = false;
 		_audioSource.loop = true;

@@ -3,21 +3,25 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class ConveyorBelt : TriggeredObj {
-	public float moveSpeed = 1;
-	public ConveyorMovement movPrefab;
-	Animation _animation;
+	public float moveSpeed = 2;
+	[SerializeField]
+	ConveyorMovement movPrefab;
+//	Animation _animation;
 	Animator _animator;
-	public bool halted;
+	
+	[SerializeField] bool halted;
 	float storedSpeed;
 
-	public bool reverseOnAction;
-	public bool toggleOnAction;
+	[SerializeField]
+	bool reverseOnAction;
+	[SerializeField]
+	bool toggleOnAction;
 
 	List<Movement> attachedObjs;
 	List<ConveyorMovement> movements;
 	// Use this for initialization
 	void Start () {
-		_animation = GetComponent<Animation>();
+	//	_animation = GetComponent<Animation>();
 		_animator = GetComponent<Animator>();
 		_animator.SetFloat("animSpeed", moveSpeed * -1.4f);
 		attachedObjs = new List<Movement>();

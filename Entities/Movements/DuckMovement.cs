@@ -14,7 +14,7 @@ public class DuckMovement : Movement {
 	const float breadDuration = 1.5f;
 
 	// Use this for initialization
-	void Start () {
+	new void Start () {
 		checkBelow = false;
 		destination = transform.position;
 		if (_sprite == null) {

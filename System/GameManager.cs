@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿#pragma warning disable 0162 //only meant to surpress the warning about unreachable code for erasing data -- TODO DELETE LATER
+using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.SceneManagement;
@@ -13,8 +14,8 @@ enum SceneDest {
 
 //TODO: Clean this bad boy UP 
 public class GameManager : MonoBehaviour {
-	public static int _levelCeiling = 10;				//max height allowed 
-	public static bool _allowFrogClicking = true;		//allow player to click on frogs to switch control to them (debug tool)
+	public const int _levelCeiling = 10;				//max height allowed 
+	public const bool _allowFrogClicking = true;		//allow player to click on frogs to switch control to them (debug tool)
 	const bool ERASE_ALL_DATA_ON_START = false;
 	
 	public static GameManager managerInstance;			//the active instance of the game manager
@@ -24,16 +25,19 @@ public class GameManager : MonoBehaviour {
 	SceneDest sceneDest;								//scene to transition to
 	bool sceneTransitioning;							//are we transitioning?
 
-	FrogCounter frogCounter;							//UI keeping track of the frogs
-	public GameObject frogPrefab;						//frog prefab (i.e. what we spawn/play as)
+	[SerializeField]
+	GameObject frogPrefab;								//frog prefab (i.e. what we spawn/play as)
 	Vector3 spawnPos;									//position to spawn frogs at
+	static float hopspeed = 1;							//how fast frogs hop
 	
+	FrogCounter frogCounter;							//UI keeping track of the frogs
 	int frogCount;
 	int hopCount;
-	public GameObject cursorPrefab;						//cursor that hovers over the currently controlled frog
+	[SerializeField]
+	GameObject cursorPrefab;							//cursor that hovers over the currently controlled frog
 	GameObject cursorInstance;
 
-	static float hopspeed = 1;							//how fast frogs hop
+	
 
 	float spawnTimer;
 	float spawnCooldown = 0.2f;
@@ -264,7 +268,44 @@ public class GameManager : MonoBehaviour {
 		}
 	}
 
+	public void HaltBGM() {
+		audioManager.Stop();
+	}
 
+
+	public bool CheckColumnFree(int col){
+		bool free = true;
+			foreach(FrogMovement f in oldFrogs){
+				if(f.Grounded() || f.stackBelow != null){
+					continue;
+				}
+				if(Mathf.RoundToInt(f.transform.position.x) == col){
+					free = false;
+					return free;
+				}
+			}
+
+		return free;
+	}
+	
+	public void LockPlayerMovement(){
+		if (currentFrog == null) {
+			Debug.Log("no player!");
+			return;
+		}
+		currentFrog.GetComponent<FrogMovement>().LockMovement();
+	}
+	
+	public static void SetHopSpeed(float speed) {
+		hopspeed = Mathf.Clamp(speed, 0.5f, 3);
+		if (managerInstance.currentFrog != null) {
+			managerInstance.currentFrog.GetComponent<FrogMovement>().SetHopSpeed(hopspeed);
+		}
+	}
+
+	public static float GetHopSpeed(){
+		return hopspeed;
+	}
 
 	public static bool IsTransitioning() {
 		if(managerInstance.screenTransition == null){
@@ -358,32 +399,11 @@ public class GameManager : MonoBehaviour {
 	}
 
 
-	public void LockPlayerMovement(){
-		if (currentFrog == null) {
-			Debug.Log("no player!");
-			return;
-		}
-		currentFrog.GetComponent<FrogMovement>().LockMovement();
-	}
 
 	//public void SetBGMSrc(BackgroundMusic src) {
 	//	bgm = src;
 //	}
-	public void HaltBGM() {
-		audioManager.Stop();
-	}
-
 	
-	public static void SetHopSpeed(float speed) {
-		hopspeed = Mathf.Clamp(speed, 0.5f, 3);
-		if (managerInstance.currentFrog != null) {
-			managerInstance.currentFrog.GetComponent<FrogMovement>().SetHopSpeed(hopspeed);
-		}
-	}
-
-	public static float GetHopSpeed(){
-		return hopspeed;
-	}
 
 	public void ClearAllData() {
 		Debug.Log("clearing all data");
