@@ -313,6 +313,9 @@ public class FrogMovement : Movement {
 				if (targpos != hopStart) {
 					GameManager.managerInstance.AddToHopCount();
 				}
+				else{
+					SetMoveDir(0);
+				}
 
 				if(stackAbove != null && targpos.x != hopStart.x){
 					//collision check for all objs stacked above
@@ -398,11 +401,9 @@ public class FrogMovement : Movement {
 
 	bool CheckValidMove(Vector3 start, Vector3 end){
 		bool valid = true;
-		Debug.Log(end + "" + start);
 		int len = Mathf.RoundToInt(end.x - start.x);
 		for(int i = 0; i < Mathf.Abs(len); i++){
 			int n = Mathf.RoundToInt(start.x + (Mathf.Sign(len) * (1+i)));
-			Debug.Log(n);
 			if(!GameManager.managerInstance.CheckColumnFree(n)){
 				valid = false;
 				break;

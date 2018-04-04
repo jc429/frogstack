@@ -25,9 +25,10 @@ public class Movement : GameEntity {
 	// used for making the stack sway
 	bool sway = true;
 	Transform _sTransform; 
+
+	//currently unused but may end up being useful
 	Vector3 curPos;
 	Vector3 prevpos;
-//	Vector3 posoffset;
 
 	//ok so this needs to be .2f for hopping stacks, but ignored/very short for stuff like conveyor belts 
 	const float rbDelay = 0.01f; 			//time to wait after unlinking before reactivating rigidbody physics
@@ -116,11 +117,12 @@ public class Movement : GameEntity {
 
 	void Sway(){
 		if(stackBelow != null && sway){
+			
 			//_sTransform.localPosition = new Vector3(-0.5f,0,0);
 			float height = Mathf.Abs(DistanceToStackBottom().y);
 			float offx = 0;
 			float offy = 0;
-			float snapSpeed = 3.5f;
+			float snapSpeed = 0.5f * height;
 			if(StackMoving()){
 				offx = height * height * -0.05f * moveDir;
 				offx = Mathf.Clamp(offx,-0.5f,0.5f);
@@ -318,7 +320,7 @@ public class Movement : GameEntity {
 	}
 
 
-	
+
 
 	public bool Grounded() {
 		bool groundboys;
