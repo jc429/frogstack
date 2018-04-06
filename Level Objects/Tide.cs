@@ -24,6 +24,7 @@ public class Tide : MonoBehaviour {
 	float tideShiftDuration = 1f;
 	float tideTileSpeed = 0.3f;			//how long it takes to traverse one tile 
 
+
 	// Use this for initialization
 	void Start () {
 		highTide = transform.position;
@@ -47,7 +48,6 @@ public class Tide : MonoBehaviour {
 				tideEnd = highTide;
 			}
 		}
-		Debug.Log(tideLower);
 	}
 	
 	// Update is called once per frame
@@ -81,7 +81,7 @@ public class Tide : MonoBehaviour {
 		}
 
 		if(Input.GetMouseButtonDown(0)){
-			SetTideShift(0);
+			MoveToHeight(6);
 		}
 		
 	}
@@ -110,6 +110,26 @@ public class Tide : MonoBehaviour {
 				tideEnd.y = Mathf.FloorToInt(transform.position.y);
 			}
 		}
+		tideShiftTime = 0;
+		tideShiftDuration = Mathf.Abs(tideEnd.y - tideStart.y)*tideTileSpeed;
+	}
+
+
+	public void MoveToHeight(float height){
+		Vector3 level = transform.position;
+		level.y = height;
+
+		if(level.y == transform.position.y){
+			return;
+		}
+		else if(level.y < transform.position.y){
+			tideShift = -1;
+		}
+		else if(level.y > transform.position.y){
+			tideShift= 1;
+		}
+		tideStart = transform.position;
+		tideEnd = level;
 		tideShiftTime = 0;
 		tideShiftDuration = Mathf.Abs(tideEnd.y - tideStart.y)*tideTileSpeed;
 	}

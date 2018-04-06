@@ -44,7 +44,9 @@ public class GameManager : MonoBehaviour {
 	public FrogMovement currentFrog;
 	List<FrogMovement> oldFrogs;
 	List<NoSpawn> noSpawnZones;
-
+	List<SpawnZone> spawnZones;
+	public bool spawnQueued;
+	Vector3 queuedPos;
 	
 
 	public PauseMenu pauseMenu;
@@ -52,6 +54,7 @@ public class GameManager : MonoBehaviour {
 	public bool paused;
 
 	
+
 	// Use this for initialization
 	void Awake() {
 		if (managerInstance == null) {
@@ -69,6 +72,7 @@ public class GameManager : MonoBehaviour {
 
 		oldFrogs = new List<FrogMovement>();
 		noSpawnZones = new List<NoSpawn>();
+		spawnZones = new List<SpawnZone>();
 		audioManager = GetComponentInChildren<AudioManager>();
 	}
 	void Start() {
@@ -122,8 +126,23 @@ public class GameManager : MonoBehaviour {
 			}
 			if (Input.GetKeyDown(KeyCode.Space)
 			|| Input.GetKeyDown(KeyCode.LeftShift)) {
-			//	Debug.Log("arg");
-				SpawnFrog();
+				if(currentFrog.Stable()){
+					bool insz = false; 
+					foreach(SpawnZone sz in spawnZones){
+						if(sz.Activated()){
+							spawnQueued = true;
+							queuedPos = sz.transform.position;
+							queuedPos.z = 0;
+							Vector3 v = currentFrog.transform.position + new Vector3(0,1);
+							currentFrog.HopToTarget(v);
+							insz = true;
+							break;
+						}
+					}
+					if(!insz){
+						SpawnFrog(spawnPos);
+					}
+				}
 			}
 			if (currentFrog != null && !currentFrog.IsInMotion() && !currentFrog.isUnderwater) {
 				if ((Input.GetKeyDown(KeyCode.W)||Input.GetKeyDown(KeyCode.UpArrow)) && currentFrog.stackAbove != null) {
@@ -157,7 +176,15 @@ public class GameManager : MonoBehaviour {
 		}
 	}
 
-	void SpawnFrog() {
+	void LateUpdate(){
+		if(spawnQueued && currentFrog.destReached){
+			currentFrog.destReached = false;
+			spawnQueued = false;
+			SpawnFrog(queuedPos,true);
+		}
+	}
+
+	void SpawnFrog(Vector3 pos, bool overrideStabilityCheck = false) {
 		if (frogPrefab == null) {
 			Debug.Log("Error - no frog!");
 		}
@@ -165,7 +192,7 @@ public class GameManager : MonoBehaviour {
 			return;
 		}
 		if (currentFrog != null) {
-			if (!currentFrog.Stable()) {
+			if (!currentFrog.Stable() && !overrideStabilityCheck) {
 				return;
 			}
 			else {
@@ -180,6 +207,8 @@ public class GameManager : MonoBehaviour {
 					return;
 				}
 			}
+			
+
 			if (currentFrog.isUnderwater) {
 				currentFrog.Poof();
 			}
@@ -188,7 +217,7 @@ public class GameManager : MonoBehaviour {
 		}
 	//	Debug.Log("BOOP?");
 		currentFrog = Instantiate<GameObject>(frogPrefab).GetComponent<FrogMovement>();
-		currentFrog.transform.position = spawnPos;
+		currentFrog.transform.position = pos;
 		UpdateFrogCounter(oldFrogs.Count + 1);
 		spawnTimer = spawnCooldown;
 		currentFrog.ActivateFrog();
@@ -259,12 +288,16 @@ public class GameManager : MonoBehaviour {
 		noSpawnZones.Add(nsp);
 	}
 
+	public void AddSpawnZone(SpawnZone sz){
+		spawnZones.Add(sz);
+	}
+
 	public void SetSpawnPoint(Vector3 pos) {
 	//	Debug.Log("Spawn Point Set" + pos);
 		pos.z = 0;
 		spawnPos = pos;
 		if (currentFrog == null) {
-			SpawnFrog();
+			SpawnFrog(spawnPos);
 		}
 	}
 
