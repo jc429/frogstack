@@ -35,10 +35,14 @@ public class FrogMovement : Movement {
 	const float inputThreshold = 0.08f;		//how long you need to be holding a direction to move instead of turn
 	int moveHoldTimer = 0;					//briefly used to pause movement so you "stick" to a tile for a moment like an irl frog
 
+
+
 	bool scriptLock;
 	bool activeFrog;
 
 	public bool destReached;				//flag set to true on the frame a frog reaches its destination hop
+	bool springJumpStored = false;
+	bool springJump = false;
 
 	// Use this for initialization
 	new void Start() {
@@ -129,12 +133,13 @@ public class FrogMovement : Movement {
 
 		if (moving) {
 			//transform.position = Vector3.MoveTowards(transform.position, target.position, movespeed);
-			BasicHop();
+			HopMotion();
 			//Debug.Log(Time.deltaTime);
 			if (transform.position == hopTimer.end) {
 				//target = null;
 				moving = false;
 				destReached = true;
+				springJump = false;
 				_rigidbody.velocity = Vector3.zero;
 				moveHoldTimer = 3;	//prevents moving too quickly for the game to process
 
@@ -227,24 +232,28 @@ public class FrogMovement : Movement {
 			if (canmove) {
 				swimming = isUnderwater;
 
-				hopTimer.start = transform.position;
-				Vector3 targpos = hopTimer.start + new Vector3(targDir.x, targDir.y, targDir.z);
-				Vector3 stacktop = hopTimer.start + DistanceToStackTop();
+				Vector3 hopStart = transform.position;
+				if(springJumpStored){
+					hopStart.y += 1;
+				}
+
+				Vector3 targpos = hopStart + new Vector3(targDir.x, targDir.y, targDir.z);
+				Vector3 stacktop = hopStart + DistanceToStackTop();
 
 				//raycast to check if we're gonna hit something solid
 
 				//if underwater, dont allow swimming up/down into walls
 				if (isUnderwater) {
 					if (targDir.y < 0 && Physics.Raycast(transform.position, Vector3.down, raylen, platmask)) {
-						targpos = hopTimer.start;
+						targpos = hopStart;
 					}
 					if (targDir.y > 0 && Physics.Raycast(stacktop, Vector3.up, raylen, gmask)) {
-						targpos = hopTimer.start;
+						targpos = hopStart;
 					}
 				}
 				
 				//if there is a solid wall in front of us, try to jump on top of it
-				if (Physics.Raycast(hopTimer.start, new Vector3(targDir.x, 0, 0), raylen, gmask)) {
+				if (Physics.Raycast(hopStart, new Vector3(targDir.x, 0, 0), raylen, gmask)) {
 					//if not at the ceiling
 					if (!(transform.position.y > GameManager._levelCeiling)) {
 						//try hopping upward
@@ -253,7 +262,7 @@ public class FrogMovement : Movement {
 						//if theres a solid wall directly above us, cancel the jump
 						if (Physics.Raycast(stacktop, Vector3.up, raylen, gmask)) {
 							Debug.Log("owie oof");
-							targpos = hopTimer.start;
+							targpos = hopStart;
 						}
 						//TODO: make this jump not take place underwater
 						else if (isUnderwater) {
@@ -263,12 +272,12 @@ public class FrogMovement : Movement {
 					}
 					//if at the ceiling, we're not allowed to move
 					else {
-						targpos = hopTimer.start;
+						targpos = hopStart;
 					}
 					//if the wall in front of us is too tall to hop up, cancel the jump
 					//TODO: change to raycast for every frog in the stack 
-					if (Physics.Raycast(hopTimer.start + Vector3.up, new Vector3(targDir.x, 0, 0), raylen, gmask)) {
-						targpos = hopTimer.start;
+					if (Physics.Raycast(hopStart + Vector3.up, new Vector3(targDir.x, 0, 0), raylen, gmask)) {
+						targpos = hopStart;
 
 						if (isUnderwater) {
 							swimming = true;
@@ -276,7 +285,7 @@ public class FrogMovement : Movement {
 					}
 					
 				}
-				else if (!isUnderwater) {
+				else if (!isUnderwater && !springJumpStored) {
 					//if the space in front of us is free, check if the space below that is free 
 					if (!Physics.Raycast(targpos, Vector3.down, raylen, platmask)) {
 						//if there is an open space 2 tiles forward from us, and there is a solid tile below that 
@@ -314,6 +323,8 @@ public class FrogMovement : Movement {
 	public void HopToTarget(Vector3 targpos){
 		hopTimer.start = transform.position;
 		destReached = false;
+		springJump = springJumpStored;
+		springJumpStored = false;
 		//if there are falling frogs between us and our destination, cancel the hop until theyre gone
 		if(!CheckValidMove(hopTimer.start,targpos)){
 			targpos = hopTimer.start;
@@ -325,6 +336,9 @@ public class FrogMovement : Movement {
 		//Debug.Log("hop! " + (targpos - hopTimer.start) + swimming);
 		if (targpos != hopTimer.start) {
 			GameManager.managerInstance.AddToHopCount();
+			if(targpos.x == hopTimer.start.x){		//if hopping up vertically
+				SetMoveDir(0);
+			}
 		}
 		else{
 			SetMoveDir(0);
@@ -334,6 +348,9 @@ public class FrogMovement : Movement {
 			//horizontal collision check for all objs stacked above
 			Movement m = stackAbove; 
 			Vector3 stackstart = hopTimer.start + Vector3.up;
+			if(springJump){
+				stackstart.y += 1;
+			}
 			while (m != null) {
 				Vector3 moveoffset = targpos - hopTimer.start;
 				moveoffset.y = 0;
@@ -370,18 +387,38 @@ public class FrogMovement : Movement {
 		}
 	}
 
-	void BasicHop() {
+	void HopMotion() {
 		if(Time.deltaTime > 0.1f){
 			Debug.Log("Time since last frame too long, ignoring frame (" + Time.deltaTime +")");
 			return;
 		}
-		float height = 0.5f;
+
+		const float vertspeed = 8f;		//speed to move vertically during hops
+		//if this is an ascending jump
+		if(hopTimer.start.y < hopTimer.end.y){
+			if(transform.position.y < hopTimer.end.y){
+				_rigidbody.isKinematic = true;
+				Vector3 v = transform.position;
+				v.y = hopTimer.end.y;
+				transform.position = Vector3.MoveTowards(transform.position,v, vertspeed*Time.deltaTime);
+				if(transform.position.y < v.y){
+					return;
+				}
+				else{
+					_rigidbody.isKinematic = false;
+					hopTimer.start.y = v.y;
+				}
+			}
+			
+		}
+
+		float peakheight = 0.5f;
 		hopTimer.time += Time.deltaTime;
 		Vector3 currentPos = Vector3.Lerp(hopTimer.start, hopTimer.end, hopTimer.time / hopTimer.duration);
 		//Unlink(Vector3.down);
 		if (!swimming) {
 			//TODO: change this to make a prettier arc 
-			currentPos.y += height * Mathf.Sin(Mathf.Clamp01(hopTimer.time / hopTimer.duration) * Mathf.PI);
+			currentPos.y += peakheight * Mathf.Sin(Mathf.Clamp01(hopTimer.time / hopTimer.duration) * Mathf.PI);
 		}
 
 		transform.position = currentPos;
@@ -398,17 +435,24 @@ public class FrogMovement : Movement {
 		hopTimer.duration = (1 / speedMultiplier) * basicHopTime;
 	}
 
+	public void StoreSpringJump(){
+		springJumpStored = true;
+	}
+
 	public void Poof() {
 		GameObject smoke = GameObject.Instantiate(smokePrefab);
 		smoke.transform.position = this.transform.position;
 
+
+	}
+	
+	public void Disappear(){
+		Poof();
 		if (stackAbove != null) {
 			stackAbove.Unlink();
 		}
 		gameObject.SetActive(false);
-
 	}
-	
 
 	bool CheckValidMove(Vector3 start, Vector3 end){
 		bool valid = true;
@@ -437,14 +481,18 @@ public class FrogMovement : Movement {
 				break;
 			}
 			Vector3 raystart = hopStart + new Vector3(0,breakpoint);
+			//if the stack is hopping upward, shift the raycasts up one tile
 			if(movementDir.y > 0){
-				//if the stack is hopping upward, shift the raycasts up one tile
 				raystart.y += 1;
 				//Debug.Log("hop up");
 			}
+			if(springJump){
+				Debug.Log("yeeet");
+				raystart.y += 1;
+			}
 			if(Physics.Raycast(raystart,new Vector3(movementDir.x,0,0),raylen,gmask)){
 				stackbroken = true;
-				//Debug.Log("stack broken at " + raystart);
+				Debug.Log("stack broken at " + raystart);
 				Movement m = this;
 				for(int i = 0; i < breakpoint; i++){
 					m = m.stackAbove;

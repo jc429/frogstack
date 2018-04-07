@@ -5,10 +5,15 @@ using UnityEngine;
 public class StepButton : MonoBehaviour {
 
 	SpriteRenderer _sprite;
-	public Sprite[] sprites;
+	[SerializeField]
+	Sprite[] sprites;
+	
 	public bool requireHold;
 	public bool stayPressed;
-	public TriggeredObj[] connectedObjects;
+
+	[SerializeField]
+	TriggeredObj[] connectedObjects;
+
 	int objs;
 	bool isActive;
 

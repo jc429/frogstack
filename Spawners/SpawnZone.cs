@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class SpawnZone : MonoBehaviour {
 GameManager gameManager;
-	public int objs;
+	int objs;
 	// Use this for initialization
 	void Start () {
 		gameManager = GameObject.FindGameObjectWithTag("GameController").GetComponent<GameManager>();

@@ -124,7 +124,7 @@ public class Movement : GameEntity {
 			float offy = 0;
 			float snapSpeed = 0.5f * height;
 			if(StackMoving()){
-				offx = height * height * -0.05f * moveDir;
+				offx = height * height * -0.025f * moveDir;
 				offx = Mathf.Clamp(offx,-0.5f,0.5f);
 			}
 			else{
