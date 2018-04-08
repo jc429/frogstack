@@ -487,7 +487,6 @@ public class FrogMovement : Movement {
 				//Debug.Log("hop up");
 			}
 			if(springJump){
-				Debug.Log("yeeet");
 				raystart.y += 1;
 			}
 			if(Physics.Raycast(raystart,new Vector3(movementDir.x,0,0),raylen,gmask)){

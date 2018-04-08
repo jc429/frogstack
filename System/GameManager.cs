@@ -17,6 +17,7 @@ public class GameManager : MonoBehaviour {
 	public const int _levelCeiling = 10;				//max height allowed 
 	public const bool _allowFrogClicking = true;		//allow player to click on frogs to switch control to them (debug tool)
 	const bool ERASE_ALL_DATA_ON_START = false;
+	public static bool DEBUG_MODE = true;
 	
 	public static GameManager managerInstance;			//the active instance of the game manager
 	AudioManager audioManager;
@@ -64,17 +65,23 @@ public class GameManager : MonoBehaviour {
 		else if(managerInstance != this) {
 			Destroy(this.gameObject);
 		}
-		if (ERASE_ALL_DATA_ON_START) {
+		if (DEBUG_MODE && ERASE_ALL_DATA_ON_START) {
 			LevelManager.EraseAllLevelData();
 		}
 		LevelManager.LoadLevelData();
 		SceneManager.sceneLoaded += StartLevel;
 
+
 		oldFrogs = new List<FrogMovement>();
 		noSpawnZones = new List<NoSpawn>();
 		spawnZones = new List<SpawnZone>();
 		audioManager = GetComponentInChildren<AudioManager>();
+
+
+
+ 
 	}
+
 	void Start() {
 	//	screenTransition = GameObject.FindGameObjectWithTag("EffectsCamera").GetComponent<ScreenTransition>();
 	//	screenTransition.StartTransitionIn();
@@ -156,6 +163,29 @@ public class GameManager : MonoBehaviour {
 			if (Input.GetKeyDown(KeyCode.R)) {
 				ResetLevel();
 			}
+
+			if(DEBUG_MODE && Input.GetKeyDown(KeyCode.RightAlt)){
+				ScreenCapture.CaptureScreenshot("C:/Users/edibl_000/Pictures/games/frog stack/GameCap/test.png");
+				
+				Debug.Log("Screen capture saved!");
+			}
+			if(DEBUG_MODE){
+				if(Input.GetKeyDown(KeyCode.Keypad0)){
+					RenderSettings.ToggleFullscreen();
+				}
+				if(Input.GetKeyDown(KeyCode.Keypad1)){
+					RenderSettings.SetRenderScale(1);
+				}
+				if(Input.GetKeyDown(KeyCode.Keypad2)){
+					RenderSettings.SetRenderScale(2);
+				}
+				if(Input.GetKeyDown(KeyCode.Keypad3)){
+					RenderSettings.SetRenderScale(3);
+				}
+				if(Input.GetKeyDown(KeyCode.Keypad4)){
+					RenderSettings.SetRenderScale(4);
+				}
+			}
 		}
 	}
 
@@ -165,6 +195,15 @@ public class GameManager : MonoBehaviour {
 			spawnQueued = false;
 			SpawnFrog(queuedPos,true);
 		}
+	}
+
+
+
+	/********************* Frog Spawning *********************/
+	
+	bool SpawnTriggered(){
+		return Input.GetKeyDown(KeyCode.Space)
+			|| Input.GetKeyDown(KeyCode.LeftShift);
 	}
 
 	void AttemptSpawn(){
@@ -257,20 +296,6 @@ public class GameManager : MonoBehaviour {
 
 	}
 
-	void ClearFrogs() {
-		if (currentFrog != null) {
-			GameObject.Destroy(currentFrog.gameObject);
-			currentFrog = null;
-		}
-		foreach (FrogMovement frog in oldFrogs) {
-			GameObject.Destroy(frog.gameObject);
-		}
-		oldFrogs.Clear();
-		noSpawnZones.Clear();
-		spawnZones.Clear();
-		frogCount = 0;
-		hopCount = 0;
-	}
 
 	public void SetCurrentFrog(FrogMovement f) {
 		if (currentFrog != f) {
@@ -302,10 +327,24 @@ public class GameManager : MonoBehaviour {
 		cursorInstance.SetActive(true);
 	}
 
+	
+	void ClearFrogs() {
+		if (currentFrog != null) {
+			GameObject.Destroy(currentFrog.gameObject);
+			currentFrog = null;
+		}
+		foreach (FrogMovement frog in oldFrogs) {
+			GameObject.Destroy(frog.gameObject);
+		}
+		oldFrogs.Clear();
+		noSpawnZones.Clear();
+		spawnZones.Clear();
+		frogCount = 0;
+		hopCount = 0;
+	}
 
-	bool SpawnTriggered(){
-		return Input.GetKeyDown(KeyCode.Space)
-			|| Input.GetKeyDown(KeyCode.LeftShift);
+	public static void SetFrogCounter(FrogCounter fc){
+		managerInstance.frogCounter = fc;
 	}
 
 	void UpdateFrogCounter(int num){
@@ -318,30 +357,6 @@ public class GameManager : MonoBehaviour {
 	public void AddToHopCount(int ct = 1){
 		hopCount += ct;
 	}
-
-
-	//add a no-spawn zone to the list
-	public void AddNoSpawnZone(NoSpawn nsp){
-		noSpawnZones.Add(nsp);
-	}
-
-	public void AddSpawnZone(SpawnZone sz){
-		spawnZones.Add(sz);
-	}
-
-	public void SetSpawnPoint(Vector3 pos) {
-	//	Debug.Log("Spawn Point Set" + pos);
-		pos.z = 0;
-		spawnPos = pos;
-		if (currentFrog == null) {
-			SpawnFrog(spawnPos);
-		}
-	}
-
-	public void HaltBGM() {
-		audioManager.Stop();
-	}
-
 
 	public bool CheckColumnFree(int col){
 		bool free = true;
@@ -377,6 +392,28 @@ public class GameManager : MonoBehaviour {
 		return hopspeed;
 	}
 
+	/********************* Spawn Zones *********************/
+
+	//add a no-spawn zone to the list
+	public void AddNoSpawnZone(NoSpawn nsp){
+		noSpawnZones.Add(nsp);
+	}
+
+	public void AddSpawnZone(SpawnZone sz){
+		spawnZones.Add(sz);
+	}
+
+	public void SetSpawnPoint(Vector3 pos) {
+	//	Debug.Log("Spawn Point Set" + pos);
+		pos.z = 0;
+		spawnPos = pos;
+		if (currentFrog == null) {
+			SpawnFrog(spawnPos);
+		}
+	}
+
+	/********************* Screen Transitions *********************/
+
 	public static bool IsTransitioning() {
 		if(managerInstance.screenTransition == null){
 			return false;
@@ -398,6 +435,8 @@ public class GameManager : MonoBehaviour {
 		screenTransition = st;
 	}
 
+
+	/********************* Level Management *********************/
 
 	public void StartLevel(Scene scene, LoadSceneMode mode) {
 		if(screenTransition != null)
@@ -468,13 +507,6 @@ public class GameManager : MonoBehaviour {
 			SceneManager.LoadScene(0);
 	}
 
-
-
-	//public void SetBGMSrc(BackgroundMusic src) {
-	//	bgm = src;
-//	}
-	
-
 	public void ClearAllData() {
 		Debug.Log("clearing all data");
 		LevelManager.EraseAllLevelData();
@@ -486,9 +518,11 @@ public class GameManager : MonoBehaviour {
 		return managerInstance.audioManager;
 	}
 
-	public static void SetFrogCounter(FrogCounter fc){
-		managerInstance.frogCounter = fc;
+	
+	public void HaltBGM() {
+		audioManager.Stop();
 	}
+
 }
 
 
