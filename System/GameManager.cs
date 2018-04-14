@@ -140,21 +140,20 @@ public class GameManager : MonoBehaviour {
 				AttemptSpawn();
 			}
 			if (currentFrog != null && !currentFrog.IsInMotion() && !currentFrog.isUnderwater) {
-				if ((Input.GetKeyDown(KeyCode.W)||Input.GetKeyDown(KeyCode.UpArrow)) && currentFrog.stackAbove != null) {
+				if (VirtualController.UpDPadPressed() && currentFrog.stackAbove != null) {
 					FrogMovement fm = currentFrog.stackAbove.GetComponent<FrogMovement>();
 					if (fm != null) {
 						SetCurrentFrog(fm);
 					}
 				}
-				else if ((Input.GetKeyDown(KeyCode.S)||Input.GetKeyDown(KeyCode.DownArrow)) && currentFrog.stackBelow != null) {
+				else if (VirtualController.DownDPadPressed() && currentFrog.stackBelow != null) {
 					FrogMovement fm = currentFrog.stackBelow.GetComponent<FrogMovement>();
 					if (fm != null) {
 						SetCurrentFrog(fm);
 					}
 				}
 			}
-			if (Input.GetKeyDown(KeyCode.P)
-			|| Input.GetKeyDown(KeyCode.Escape)) {
+			if (VirtualController.PauseButtonPressed()) {
 				
 				if (pauseMenu != null) {
 					if (optionsMenu != null && optionsMenu.open) {
@@ -165,16 +164,17 @@ public class GameManager : MonoBehaviour {
 					}
 				}
 			}
-			if (Input.GetKeyDown(KeyCode.R)) {
+			if (VirtualController.ResetButtonPressed()) {
 				ResetLevel();
 			}
 
-			if(DEBUG_MODE && Input.GetKeyDown(KeyCode.RightAlt)){
-				ScreenCapture.CaptureScreenshot("C:/Users/edibl_000/Pictures/games/frog stack/GameCap/test.png");
-				
-				Debug.Log("Screen capture saved!");
-			}
 			if(DEBUG_MODE){
+				if(Input.GetKeyDown(KeyCode.RightAlt)){
+					ScreenCapture.CaptureScreenshot("C:/Users/edibl_000/Pictures/games/frog stack/GameCap/test.png");
+					
+					Debug.Log("Screen capture saved!");
+				}
+
 				if(Input.GetKeyDown(KeyCode.Keypad0)){
 					RenderSettings.ToggleFullscreen();
 				}
@@ -207,8 +207,7 @@ public class GameManager : MonoBehaviour {
 	/********************* Frog Spawning *********************/
 	
 	bool SpawnTriggered(){
-		return Input.GetKeyDown(KeyCode.Space)
-			|| Input.GetKeyDown(KeyCode.LeftShift);
+		return VirtualController.SpawnButtonPressed();
 	}
 
 	void AttemptSpawn(){
@@ -254,7 +253,6 @@ public class GameManager : MonoBehaviour {
 					}
 					break;
 				}
-				else{Debug.Log("nani");}
 			}
 			if(!insz){
 				SpawnFrog(spawnPos);

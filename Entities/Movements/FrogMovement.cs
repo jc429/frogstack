@@ -79,7 +79,7 @@ public class FrogMovement : Movement {
 				}
 				_rigidbody.velocity = new Vector3(_rigidbody.velocity.x, Mathf.Max(_rigidbody.velocity.y, maxvelocity), _rigidbody.velocity.z);
 		*/
-		if (activeFrog && Input.GetKeyDown(KeyCode.C)) {
+		if (activeFrog && VirtualController.CroakButtonPressed()) {
 			_audio.PlayCroak();
 		}
 
@@ -106,8 +106,8 @@ public class FrogMovement : Movement {
 			if (moveHoldTimer > 0)
 				moveHoldTimer--;
 			else {
-				mx = Input.GetAxisRaw("Horizontal");
-				mz = Input.GetAxisRaw("Vertical");
+				mx = VirtualController.GetAxisHorizontal();
+				mz = VirtualController.GetAxisVertical();
 			}
 		}
 
@@ -292,7 +292,7 @@ public class FrogMovement : Movement {
 						//and the player is not holding "down"
 						if (Physics.Raycast(targpos + new Vector3(targDir.x, 0, 0), Vector3.down, raylen, platmask)
 						&& !Physics.Raycast(targpos, new Vector3(targDir.x, 0, 0), raylen, gmask)
-						&& (Input.GetAxisRaw("Vertical") >= 0)) {
+						&& (VirtualController.GetAxisVertical() >= 0)) {
 							targpos.x += facing;
 						}
 						//if the tile in front of us is empty and the tile beneath that is empty
