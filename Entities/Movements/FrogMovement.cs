@@ -26,7 +26,7 @@ public class FrogMovement : Movement {
 	float hopTimer.duration;			//total hop time
 	float hopTimer.time;				//elapsed hop time
 */
-	Timer hopTimer;
+	TimerV hopTimer;
 
 	public Vector3 targDir = Vector3.forward;
 	[SerializeField]

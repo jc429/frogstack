@@ -31,10 +31,9 @@ public class ScreenTransition : MonoBehaviour {
 
 	// Use this for initialization
 	void Start() {
-		if (GameManager.managerInstance != null) {
-			GameManager.managerInstance.SetScreenTransition(this);
-			StartTransitionIn();
-		}
+		TransitionManager.SetScreenTransition(this);
+		StartTransitionIn();
+		
 		//transitionTime = 0;
 		if (transitionMat != null) {
 			transitionMat.SetFloat("_Cutoff", 0);
@@ -44,6 +43,9 @@ public class ScreenTransition : MonoBehaviour {
 
 	// Update is called once per frame
 	void Update() {
+#if UNITY_EDITOR
+		transitionTime = transitionDuration;
+#endif
 		if (animating) {
 			transitionTime += Time.deltaTime;
 			if (transitionTime <= transitionDuration && transitionDuration > 0 && transitionMat != null) {

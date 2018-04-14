@@ -64,7 +64,7 @@ public class MainMenuController : MonoBehaviour {
 	// Update is called once per frame
 	void Update() {
 		if (transitioning) {
-			if (GameManager.TransitionDone()) {
+			if (TransitionManager.TransitionDone()) {
 				transitioning = false;
 				GoToSelectedLevel();
 			}
@@ -146,7 +146,7 @@ public class MainMenuController : MonoBehaviour {
 		}
 		Debug.Log("Selected level " + selectedWorld + "-" + selectedLevel);
 		
-		GameManager.StartScreenTransitionOut();
+		TransitionManager.StartScreenTransitionOut();
 		transitioning = true;
 	}
 

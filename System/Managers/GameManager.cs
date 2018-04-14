@@ -4,13 +4,6 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.SceneManagement;
 
-enum SceneDest {
-	SD_Null,
-	SD_CurrentScene,
-	SD_NextScene,
-	SD_MainMenu,
-	SD_GameEnd,
-};
 
 //TODO: Clean this bad boy UP 
 public class GameManager : MonoBehaviour {
@@ -22,9 +15,6 @@ public class GameManager : MonoBehaviour {
 	public static GameManager managerInstance;			//the active instance of the game manager
 	AudioManager audioManager;
 
-	ScreenTransition screenTransition;					//transition camera
-	SceneDest sceneDest;								//scene to transition to
-	bool sceneTransitioning;							//are we transitioning?
 
 	[SerializeField]
 	GameObject frogPrefab;								//frog prefab (i.e. what we spawn/play as)
@@ -89,9 +79,7 @@ public class GameManager : MonoBehaviour {
 	//	screenTransition.StartTransitionIn();
 	//	Screen.SetResolution(288, 160, false);
 	//	SpawnFrog();
-		if(currentGem == null && DEBUG_MODE){
-			Debug.Log("error - no gem detected in this level");
-		}
+	
 	}
 	
 	// Update is called once per frame
@@ -102,34 +90,11 @@ public class GameManager : MonoBehaviour {
 		else {
 			Time.timeScale = 1;
 		}
-		if (sceneTransitioning) {
-			if (screenTransition.FadedOut()) {
-				ClearFrogs();	
-				switch(sceneDest){
-					case SceneDest.SD_CurrentScene:
-						Debug.Log("Loading Scene" + SceneManager.GetActiveScene().buildIndex);
-						SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
-						break;
-
-					case SceneDest.SD_NextScene:
-						//Debug.Log("Loading Scene" + SceneManager.GetActiveScene().buildIndex + 1);
-						LevelManager.LoadNextLevel();
-						//SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex+1);
-						break;
-
-					case SceneDest.SD_MainMenu:
-						SceneManager.LoadScene(0);
-						break;
-
-					case SceneDest.SD_GameEnd:
-						SceneManager.LoadScene(1);
-						break;
-
-					default:
-						break;
-				}
-				sceneTransitioning = false;
-				sceneDest = SceneDest.SD_Null;
+		if (TransitionManager.IsTransitioning()) {
+			if (TransitionManager.GetScreenTransition().FadedOut()) {
+				ClearFrogs();
+				TransitionManager.GoToDestination();	
+				
 			}
 		}
 		else{	//if not transitioning 
@@ -432,35 +397,11 @@ public class GameManager : MonoBehaviour {
 		return currentGem.IsCollected();
 	}
 
-	/********************* Screen Transitions *********************/
-
-	public static bool IsTransitioning() {
-		if(managerInstance.screenTransition == null){
-			return false;
-		}
-		return managerInstance.sceneTransitioning || managerInstance.screenTransition.FadedOut();
-	}
-
-	public static void StartScreenTransitionOut(){
-		if(managerInstance.screenTransition != null){
-			managerInstance.screenTransition.StartTransitionOut();
-		}
-	}
-
-	public static bool TransitionDone(){
-		return(managerInstance.screenTransition != null && managerInstance.screenTransition.transitionDone);
-	}
-	
-	public void SetScreenTransition(ScreenTransition st){
-		screenTransition = st;
-	}
-
-
 	/********************* Level Management *********************/
 
 	public void StartLevel(Scene scene, LoadSceneMode mode) {
-		if(screenTransition != null)
-			screenTransition.StartTransitionIn();
+		if(TransitionManager.GetScreenTransition() != null)
+			TransitionManager.GetScreenTransition().StartTransitionIn();
 		
 	}
 
@@ -482,17 +423,7 @@ public class GameManager : MonoBehaviour {
 		}
 
 		CleanLevel();
-
-
-		if (screenTransition != null) {
-			screenTransition.StartTransitionOut();
-			sceneTransitioning = true;
-			sceneDest = SceneDest.SD_CurrentScene;
-		}
-		else if(!sceneTransitioning){
-			SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
-		}
-
+		TransitionManager.TransitionToLevel(SceneDest.SD_CurrentScene);
 	}
 
 	public void AdvanceLevel() {
@@ -500,17 +431,8 @@ public class GameManager : MonoBehaviour {
 		if (currentFrog != null) {
 			currentFrog.GetComponent<FrogMovement>().LockMovement();
 		}
-		if (screenTransition != null) {
-			screenTransition.StartTransitionOut();
-			sceneTransitioning = true;
-			
-			sceneDest = SceneDest.SD_NextScene;
-
-			//remove later
-			if (LevelManager.curLevel >= 7) {
-				sceneDest = SceneDest.SD_GameEnd;
-			}
-		}
+		TransitionManager.TransitionToLevel(SceneDest.SD_NextScene);
+		
 	}
 
 	void CompleteLevel() {
@@ -525,13 +447,11 @@ public class GameManager : MonoBehaviour {
 		if (currentFrog != null) {
 			currentFrog.GetComponent<FrogMovement>().LockMovement();
 		}
-		if (screenTransition != null) {
-			screenTransition.StartTransitionOut();
-			sceneTransitioning = true;
-			sceneDest = SceneDest.SD_MainMenu;
-		}
-		else
-			SceneManager.LoadScene(0);
+
+		TransitionManager.TransitionToLevel(SceneDest.SD_MainMenu);
+		
+	//	else
+	//		SceneManager.LoadScene(0);
 	}
 
 	public void ClearAllData() {
