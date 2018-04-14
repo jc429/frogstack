@@ -4,29 +4,34 @@ using UnityEngine;
 
 public class Spring : MonoBehaviour {
 
+	AudioSource _audio;
 
 	int objs;
-	bool isActive;
 
-	GameObject connectedObj;
+	GameObject connectedFrog;
 
 	[SerializeField]
 	GameObject springHead;
 
+
 	// Use this for initialization
 	void Start () {
-		connectedObj = null;
+		connectedFrog = null;
+		_audio = GetComponent<AudioSource>();
 	}
 	
 	// Update is called once per frame
 	void Update () {
-		if(connectedObj != null){
+		if(connectedFrog != null){
 			Vector3 v = springHead.transform.position;
-			v.y = connectedObj.transform.position.y - 0.5f;
-			v.y = Mathf.Min(v.y,transform.position.y);
+			v.y = connectedFrog.transform.position.y - 0.5f;
 			springHead.transform.position = v;
 			
 		}
+
+		Vector3 loc = springHead.transform.localPosition;
+		loc.y = Mathf.Clamp(loc.y,-0.5f,0);
+		springHead.transform.localPosition = loc;
 	}
 
 
@@ -35,16 +40,19 @@ public class Spring : MonoBehaviour {
 	void OnTriggerEnter(Collider other) {
 		objs++;
 		if(other.gameObject.GetComponentInParent<FrogMovement>() != null){
-			connectedObj = other.gameObject;
+			connectedFrog = other.gameObject;
 			other.gameObject.GetComponentInParent<FrogMovement>().StoreSpringJump();
 		}
 	}
 	void OnTriggerExit(Collider other) {
 		objs--;
-		connectedObj = null;
+		connectedFrog = null;
+		if(_audio != null){
+			_audio.Play();
+		}
 	}
 
-	public bool Activated() {
-		return isActive;
+	public bool Pressed() {
+		return objs > 0;
 	}
 }

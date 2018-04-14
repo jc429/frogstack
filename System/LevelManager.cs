@@ -16,6 +16,9 @@ public static class LevelManager {
 	public static int curWorld;	//0 - x 
 	public static int curLevel;	//0 - y
 
+
+	/**************************************************************************/
+
 	public static void LoadLevel(int world, int level) {
 		curWorld = world-1;
 		curLevel = level-1;
@@ -41,28 +44,7 @@ public static class LevelManager {
 		LoadCurrentLevel();
 	}
 
-	public static int GetLevelRecordAttempts(int world, int level) {
-		world = Mathf.Clamp(world - 1, 0, numWorlds);
-		level = Mathf.Clamp(level - 1, 0, levelsPerWorld);
-		//	Debug.Log("showing record for " + world +"-"+ level);
-		return levelData.recordActions[world, level];
-	}
-	public static int GetLevelRecordFrogs(int world, int level) {
-		world = Mathf.Clamp(world - 1, 0, numWorlds);
-		level = Mathf.Clamp(level - 1, 0, levelsPerWorld);
-		//	Debug.Log("showing record for " + world +"-"+ level);
-		return levelData.recordFrogs[world, level];
-	}
-
-	public static void CompleteCurrentLevel(/*int numactions*/) {
-	//	Debug.Log("saved " + numactions + "to " + curWorld + "-" + curLevel);
-	/*	if (levelData.recordActions[curWorld, curLevel] > 0)
-			numactions = Mathf.Min(numactions, levelData.recordActions[curWorld, curLevel]);
-		levelData.recordActions[curWorld, curLevel] = numactions;*/
-		Debug.Log("Completed " + curWorld + "-" + curLevel);
-		levelData.completedLevels[curWorld, curLevel] = true;
-		SaveLevelData();
-	}
+	/**************************************************************************/
 
 	public static void UnlockNextLevel() {
 	//	int world = Mathf.Clamp(curWorld - 1, 0, numWorlds);
@@ -92,6 +74,18 @@ public static class LevelManager {
 		return levelData.unlockedLevels[world, level];
 	}
 
+	/**************************************************************************/
+
+	public static void CompleteCurrentLevel(/*int numactions*/) {
+	//	Debug.Log("saved " + numactions + "to " + curWorld + "-" + curLevel);
+	/*	if (levelData.recordActions[curWorld, curLevel] > 0)
+			numactions = Mathf.Min(numactions, levelData.recordActions[curWorld, curLevel]);
+		levelData.recordActions[curWorld, curLevel] = numactions;*/
+		Debug.Log("Completed " + curWorld + "-" + curLevel);
+		levelData.completedLevels[curWorld, curLevel] = true;
+		SaveLevelData();
+	}
+	
 	public static bool LevelCompleted(int world, int level) {
 		world = Mathf.Clamp(world - 1, 0, numWorlds);
 		level = Mathf.Clamp(level - 1, 0, levelsPerWorld);
@@ -100,6 +94,7 @@ public static class LevelManager {
 		return levelData.completedLevels[world, level];
 	}
 
+	/**************************************************************************/
 
 	public static void LoadLevelData() {
 		if (File.Exists(Application.persistentDataPath + "/levelInfo.dat")) {
@@ -141,10 +136,38 @@ public static class LevelManager {
 		file.Close();
 	}
 
-	public static void SetRecord(int world, int level, int numFrogs, int numActions) {
+	/**************************************************************************/
+
+	public static int GetLevelRecordAttempts(int world, int level) {
+		world = Mathf.Clamp(world - 1, 0, numWorlds);
+		level = Mathf.Clamp(level - 1, 0, levelsPerWorld);
+		//	Debug.Log("showing record for " + world +"-"+ level);
+		return levelData.recordActions[world, level];
+	}
+	
+	public static int GetLevelRecordFrogs(int world, int level) {
+		world = Mathf.Clamp(world - 1, 0, numWorlds);
+		level = Mathf.Clamp(level - 1, 0, levelsPerWorld);
+		//	Debug.Log("showing record for " + world +"-"+ level);
+		return levelData.recordFrogs[world, level];
+	}
+
+	public static bool GetLevelGemCollected(int world, int level) {
+		world = Mathf.Clamp(world - 1, 0, numWorlds);
+		level = Mathf.Clamp(level - 1, 0, levelsPerWorld);
+		//	Debug.Log("showing record for " + world +"-"+ level);
+		return levelData.gemsCollected[world, level];
+	}
+
+	/**************************************************************************/
+	
+	public static void SetRecord(int world, int level, int numFrogs, int numActions, bool gemCollected) {
 		Debug.Log("Setting records for" + world + "-" + level + ": " + numFrogs + ", " + numActions);
 		world = Mathf.Clamp(world /*- 1*/, 0, numWorlds);
 		level = Mathf.Clamp(level /*- 1*/, 0, levelsPerWorld);
+		if(gemCollected){
+			levelData.gemsCollected[world,level] = true;
+		}
 		if ((levelData.recordActions[world, level] < 0)
 		|| (levelData.recordActions[world, level] > numActions)) {
 			levelData.recordActions[world, level] = numActions;
@@ -186,12 +209,14 @@ public class LevelData {
 	public bool[,] completedLevels = new bool[LevelManager.numWorlds, LevelManager.levelsPerWorld];
 	public int[,] recordActions = new int[LevelManager.numWorlds, LevelManager.levelsPerWorld];
 	public int[,] recordFrogs = new int[LevelManager.numWorlds, LevelManager.levelsPerWorld];
+	public bool[,] gemsCollected = new bool[LevelManager.numWorlds, LevelManager.levelsPerWorld];
 
 	public LevelData() {
 		for (int i = 0; i < LevelManager.numWorlds; i++) {
 			for (int j = 0; j < LevelManager.levelsPerWorld; j++) {
 				recordActions[i, j] = -1;
 				recordFrogs[i, j] = -1;
+				gemsCollected[i, j] = false;
 			}
 		}
 	}

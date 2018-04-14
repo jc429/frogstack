@@ -48,6 +48,8 @@ public class GameManager : MonoBehaviour {
 	List<SpawnZone> spawnZones;
 	public bool spawnQueued;
 	Vector3 queuedPos;
+
+	Gem currentGem;										//each level has a gem to collect
 	
 
 	public PauseMenu pauseMenu;
@@ -68,15 +70,15 @@ public class GameManager : MonoBehaviour {
 		if (DEBUG_MODE && ERASE_ALL_DATA_ON_START) {
 			LevelManager.EraseAllLevelData();
 		}
+		audioManager = GetComponentInChildren<AudioManager>();
+
 		LevelManager.LoadLevelData();
 		SceneManager.sceneLoaded += StartLevel;
-
 
 		oldFrogs = new List<FrogMovement>();
 		noSpawnZones = new List<NoSpawn>();
 		spawnZones = new List<SpawnZone>();
-		audioManager = GetComponentInChildren<AudioManager>();
-
+		CleanLevel();
 
 
  
@@ -87,6 +89,9 @@ public class GameManager : MonoBehaviour {
 	//	screenTransition.StartTransitionIn();
 	//	Screen.SetResolution(288, 160, false);
 	//	SpawnFrog();
+		if(currentGem == null && DEBUG_MODE){
+			Debug.Log("error - no gem detected in this level");
+		}
 	}
 	
 	// Update is called once per frame
@@ -217,6 +222,7 @@ public class GameManager : MonoBehaviour {
 					Vector3 top = currentFrog.transform.position + currentFrog.DistanceToStackTop();
 					if(Physics.Raycast(top,Vector3.up,0.6f,Layers.GetGroundMask(false))){
 						//fail bc we hit ceiling
+						Debug.Log("theres a ceiling in the way");
 						return;
 					}
 					spawnQueued = true;
@@ -233,6 +239,7 @@ public class GameManager : MonoBehaviour {
 							Vector3 top = f.transform.position + f.DistanceToStackTop();
 							if(Physics.Raycast(top,Vector3.up,0.6f,Layers.GetGroundMask(false))){
 								//fail bc we hit ceiling
+								Debug.Log("theres a ceiling in the way");
 								return;
 							}
 							spawnQueued = true;
@@ -247,10 +254,14 @@ public class GameManager : MonoBehaviour {
 					}
 					break;
 				}
+				else{Debug.Log("nani");}
 			}
 			if(!insz){
 				SpawnFrog(spawnPos);
 			}
+		}
+		else{
+			Debug.Log("unstable");
 		}
 	}
 
@@ -401,6 +412,7 @@ public class GameManager : MonoBehaviour {
 
 	public void AddSpawnZone(SpawnZone sz){
 		spawnZones.Add(sz);
+	//	Debug.Log("Spawn zone registered");
 	}
 
 	public void SetSpawnPoint(Vector3 pos) {
@@ -410,6 +422,16 @@ public class GameManager : MonoBehaviour {
 		if (currentFrog == null) {
 			SpawnFrog(spawnPos);
 		}
+	}
+
+	/********************* Gems *********************/
+	
+	public void RegisterGem(Gem g){
+		currentGem = g;
+	}
+
+	public bool CheckGemCollected(){
+		return currentGem.IsCollected();
 	}
 
 	/********************* Screen Transitions *********************/
@@ -448,15 +470,20 @@ public class GameManager : MonoBehaviour {
 
 	}
 
+	public void CleanLevel(){
+		spawnZones.Clear();
+		noSpawnZones.Clear();
+		oldFrogs.Clear();	
+		currentGem = null;
+	}
+
 	public void ResetLevel() {
 		Debug.Log("Resetting");
 		if (currentFrog != null) {
 			currentFrog.GetComponent<FrogMovement>().LockMovement();
 		}
 
-		//cleanup
-		noSpawnZones.Clear();
-		oldFrogs.Clear();	
+		CleanLevel();
 
 
 		if (screenTransition != null) {
@@ -464,8 +491,9 @@ public class GameManager : MonoBehaviour {
 			sceneTransitioning = true;
 			sceneDest = SceneDest.SD_CurrentScene;
 		}
-		else if(!sceneTransitioning)
+		else if(!sceneTransitioning){
 			SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+		}
 
 	}
 
@@ -489,7 +517,8 @@ public class GameManager : MonoBehaviour {
 
 	void CompleteLevel() {
 		Debug.Log("Level complete!");
-		LevelManager.SetRecord(LevelManager.curWorld, LevelManager.curLevel, frogCount, hopCount);
+		bool collected = currentGem.IsCollected();
+		LevelManager.SetRecord(LevelManager.curWorld, LevelManager.curLevel, frogCount, hopCount, collected);
 		LevelManager.CompleteCurrentLevel();
 		LevelManager.UnlockNextLevel();
 	}

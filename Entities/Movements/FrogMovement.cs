@@ -140,7 +140,7 @@ public class FrogMovement : Movement {
 				moving = false;
 				destReached = true;
 				springJump = false;
-				_rigidbody.velocity = Vector3.zero;
+				//_rigidbody.velocity = Vector3.zero;
 				moveHoldTimer = 3;	//prevents moving too quickly for the game to process
 
 				_rigidbody.useGravity = !isUnderwater;
@@ -382,7 +382,7 @@ public class FrogMovement : Movement {
 		transform.parent = null;
 		_rigidbody.isKinematic = false; //TODO: test if this fixes the "stuck in kinematic" issue when unstacking
 		moving = true;
-		if (!swimming) {
+		if (!swimming && !springJump) {
 			_audio.PlayJumpSound();
 		}
 	}
@@ -423,8 +423,10 @@ public class FrogMovement : Movement {
 
 		transform.position = currentPos;
 
-		if (hopTimer.time > hopTimer.duration) {
+		if (hopTimer.time >= hopTimer.duration) {
 			transform.position = hopTimer.end;
+			Vector3 v = new Vector3(0,-3.5f,0);
+			_rigidbody.velocity = v;
 		}
 	}
 

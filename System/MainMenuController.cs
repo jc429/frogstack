@@ -25,6 +25,22 @@ public class MainMenuController : MonoBehaviour {
 	float animTime = 0;
 	const float animDuration = 0.2f;
 
+	public int selectedWorld;
+	public int selectedLevel;
+
+	[SerializeField] 
+	Text sidebarTitle;
+	[SerializeField] 
+	Text sidebarRecord;
+	[SerializeField] 
+	Image sidebarCleared;
+	[SerializeField] 
+	Image sidebarGem;
+	[SerializeField]
+	Sprite gemSpriteActive;
+	[SerializeField] 
+	Sprite gemSpriteInactive;
+
 
 	void Awake() {
 		if (controllerInstance == null) {
@@ -115,8 +131,6 @@ public class MainMenuController : MonoBehaviour {
 		animTime = 0;
 	}
 
-	public int selectedWorld;
-	public int selectedLevel;
 
 	public void SelectLevel(int world, int level) {
 		selectedWorld = world;
@@ -141,9 +155,6 @@ public class MainMenuController : MonoBehaviour {
 	}
 
 	/*********************************************************/
-	public Text sidebarTitle;
-	public Text sidebarRecord;
-	public Image sidebarCleared;
 
 	public void UpdateLevelInfo() {
 		if (selectedWorld == 0 || selectedLevel == 0) {
@@ -169,6 +180,15 @@ public class MainMenuController : MonoBehaviour {
 			}
 			sidebarRecord.text = "";
 			sidebarCleared.gameObject.SetActive(false);
+		}
+		
+		if(LevelManager.LevelCompleted(selectedWorld, selectedLevel)){
+			if(LevelManager.GetLevelGemCollected(selectedWorld,selectedLevel)){
+				sidebarGem.sprite = gemSpriteActive;
+			}
+			else{
+				sidebarGem.sprite = gemSpriteInactive;
+			}
 		}
 	}
 
