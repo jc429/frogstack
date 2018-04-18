@@ -26,7 +26,7 @@ public class ScriptedMovement : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 	//	_frogMovement.facing
-		if (scripting && _frogMovement.Stable() && steps.Length > 0) {
+		if (scripting && _frogMovement.IsStable() && steps.Length > 0) {
 			stepPause -= Time.deltaTime;
 			if (stepPause <= 0) {
 				stepPause = pauseDuration;

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ConveyorBelt : TriggeredObj {
+public class ConveyorBelt : ButtonConnectedObj {
 	public float moveSpeed = 2;
 	[SerializeField]
 	ConveyorMovement movPrefab;

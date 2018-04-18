@@ -2,9 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class NoSpawn : MonoBehaviour {
+public class NoSpawn : TriggerObj {
 	GameManager gameManager;
-	public int objs;
 	// Use this for initialization
 	void Start () {
 		gameManager = GameObject.FindGameObjectWithTag("GameController").GetComponent<GameManager>();
@@ -20,7 +19,7 @@ public class NoSpawn : MonoBehaviour {
 	void Update () {
 		
 	}
-
+/*
 	void OnTriggerEnter(Collider other) {
 		if (other.GetComponent<FrogMovement>() == null) {
 			if (other.GetComponentInParent<FrogMovement>() == null) {
@@ -40,5 +39,5 @@ public class NoSpawn : MonoBehaviour {
 
 	public bool Activated() {
 		return (objs > 0);
-	}
+	}*/
 }

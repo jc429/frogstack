@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class CycleObj : TriggeredObj {
+public class CycleObj : ButtonConnectedObj {
 	public int cycle = 1;			//spawn an object every x times 
 	public int offset = 0;
 	protected int countdown; 

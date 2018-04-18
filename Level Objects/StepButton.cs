@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class StepButton : MonoBehaviour {
+public class StepButton : TriggerObj {
 
 	SpriteRenderer _sprite;
 	[SerializeField]
@@ -10,12 +10,12 @@ public class StepButton : MonoBehaviour {
 	
 	public bool requireHold;
 	public bool stayPressed;
+	bool isPressed;
 
 	[SerializeField]
-	TriggeredObj[] connectedObjects;
+	ButtonConnectedObj[] connectedObjects;
 
-	int objs;
-	bool isActive;
+	
 
 	// Use this for initialization
 	void Start () {
@@ -23,42 +23,39 @@ public class StepButton : MonoBehaviour {
 	}
 	
 	// Update is called once per frame
-	void Update () {
-		if (stayPressed && isActive) {
+	protected override void Update2 () {
+		if (stayPressed && isPressed) {
 			return;
 		}
-		bool prevActive = isActive;
-		isActive = (objs > 0);
+		isPressed = isActive;
 		
-		_sprite.sprite = (isActive ? sprites[1] : sprites[0]);
+		_sprite.sprite = (isPressed ? sprites[1] : sprites[0]);
 
-		if (isActive && !prevActive) {
-			foreach (TriggeredObj to in connectedObjects) {
+		/*if (isActive && !prevActive) {
+			foreach (ButtonConnectedObj to in connectedObjects) {
 				to.ReceiveButtonPress();
 			}
 		}
 		else if (!isActive && prevActive) {
 			if (requireHold) {
-				foreach (TriggeredObj to in connectedObjects) {
+				foreach (ButtonConnectedObj to in connectedObjects) {
 					to.ReceiveButtonRelease();
 				}
 			}
+		}*/
+
+
+	}
+
+	protected override void TriggerEnter(){
+		foreach (ButtonConnectedObj to in connectedObjects) {
+			to.ReceiveButtonPress();
 		}
-
-
 	}
-
-
-
-	void OnTriggerEnter(Collider other) {
-		objs++;
-	}
-	void OnTriggerExit(Collider other) {
-		objs--;
-	}
-
-	public bool Activated() {
-		return isActive;
+	protected override void TriggerExit(){
+		foreach (ButtonConnectedObj to in connectedObjects) {
+			to.ReceiveButtonRelease();
+		}
 	}
 
 }

@@ -22,11 +22,15 @@ public class Goal : MonoBehaviour {
 		if (levelComplete && postLevelTimer > 0) {
 			postLevelTimer -= Time.deltaTime;
 			if (postLevelTimer <= 0) {
-				//GameManager.managerInstance.ResetLevel();
-				GameManager.managerInstance.AdvanceLevel();
+				if(GameManager.DEBUG_MODE && GameManager._restartOnLevelCompletion){
+					GameManager.managerInstance.ResetLevel();
+				}
+				else{
+					GameManager.managerInstance.AdvanceLevel();
+				}
 			}
 		}
-		if (_nospawn.Activated()) {
+		if (_nospawn.IsActivated()) {
 			_sprite.color = Color.red;
 			if (!levelComplete) {
 				levelComplete = true;

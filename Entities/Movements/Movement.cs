@@ -93,7 +93,7 @@ public class Movement : GameEntity {
 				}
 			}
 		}
-		if(Stable() && stackBelow != null){
+		if(IsStable() && stackBelow != null){
 			if(Mathf.Abs(transform.localPosition.x) >= 0.9f){
 				if(showStackLog){
 					Debug.Log("safe to unlink");
@@ -350,7 +350,7 @@ public class Movement : GameEntity {
 	}
 
 	//returns true if the object is in a stable position (not moving, and either grounded or underwater)
-	public bool Stable() {
+	public bool IsStable() {
 		return (!moving && (Grounded() || isUnderwater) 
 			&& (stackBelow == null || stackBelow.GetComponent<ConveyorMovement>() == null));
 	}

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class TriggeredObj : MonoBehaviour {
+public class ButtonConnectedObj : MonoBehaviour {
 	protected static bool DEBUG = false;
 
 	// Use this for initialization

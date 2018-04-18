@@ -2,13 +2,11 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Gem : MonoBehaviour {
+public class Gem : TriggerObj {
 	SpriteRenderer _sprite;
 	AudioSource _audio;
 
-	int objs;
  
-	public FrogMovement connectedFrog;
 
 	[SerializeField]
 	Sprite[] sprites;
@@ -24,6 +22,7 @@ public class Gem : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
+		UpdateActivity();
 		if(IsCollected()){
 			_sprite.sprite = sprites[1];
 		}
@@ -32,21 +31,9 @@ public class Gem : MonoBehaviour {
 		}
 	}
 
-	void OnTriggerEnter(Collider other) {
-		
-		if(other.gameObject.GetComponentInParent<FrogMovement>() != null && connectedFrog == null){
-			objs++;
-			connectedFrog = other.gameObject.GetComponentInParent<FrogMovement>();
-			if(_audio != null){
-				_audio.Play();
-			}
-			
-		}
-	}
-	void OnTriggerExit(Collider other) {
-		if(other.gameObject.GetComponentInParent<FrogMovement>() == connectedFrog && connectedFrog != null){
-			objs--;
-			connectedFrog = null;
+	protected override void TriggerEnter(){
+		if(_audio != null){
+			_audio.Play();
 		}
 	}
 

@@ -9,6 +9,7 @@ using UnityEngine.SceneManagement;
 public class GameManager : MonoBehaviour {
 	public const int _levelCeiling = 10;				//max height allowed 
 	public const bool _allowFrogClicking = true;		//allow player to click on frogs to switch control to them (debug tool)
+	public const bool _restartOnLevelCompletion = true;
 	const bool ERASE_ALL_DATA_ON_START = false;
 	public static bool DEBUG_MODE = true;
 	
@@ -104,7 +105,7 @@ public class GameManager : MonoBehaviour {
 			if (SpawnTriggered()) {
 				AttemptSpawn();
 			}
-			if (currentFrog != null && !currentFrog.IsInMotion() && !currentFrog.isUnderwater) {
+			if (currentFrog != null && currentFrog.IsStable() && !currentFrog.IsInMotion() && !currentFrog.isUnderwater) {
 				if (VirtualController.UpDPadPressed() && currentFrog.stackAbove != null) {
 					FrogMovement fm = currentFrog.stackAbove.GetComponent<FrogMovement>();
 					if (fm != null) {
@@ -179,7 +180,7 @@ public class GameManager : MonoBehaviour {
 		if(currentFrog == null){
 			SpawnFrog(spawnPos);
 		}
-		else if(currentFrog.Stable()){
+		else if(currentFrog.IsStable()){
 			bool insz = false; 
 			foreach(SpawnZone sz in spawnZones){
 				if(sz.Activated() && PMath.CloseTo(currentFrog.transform.position,sz.transform.position)){
@@ -236,7 +237,7 @@ public class GameManager : MonoBehaviour {
 			return;
 		}
 		if (currentFrog != null) {
-			if (!currentFrog.Stable() && !overrideStabilityCheck) {
+			if (!currentFrog.IsStable() && !overrideStabilityCheck) {
 				return;
 			}
 			else {
@@ -246,7 +247,7 @@ public class GameManager : MonoBehaviour {
 					Debug.Log("argggg");*/
 			}
 			foreach (NoSpawn nsp in noSpawnZones) {
-				if (nsp.Activated()) {
+				if (nsp.IsActivated()) {
 					Debug.Log("no spawning allowed!");
 					return;
 				}

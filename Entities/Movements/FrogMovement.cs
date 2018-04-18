@@ -68,7 +68,7 @@ public class FrogMovement : Movement {
 	new void Update() {
 		
 		base.Update();
-		if (isUnderwater && !scriptLock && !activeFrog && Stable()) {
+		if (isUnderwater && !scriptLock && !activeFrog && IsStable()) {
 			Poof();
 		}
 		/*		if (Input.GetAxis("Horizontal") > deadzone) {
