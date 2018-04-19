@@ -20,7 +20,7 @@ public class ConveyorMovement : Movement {
 		//base.Update();	//intentionally ignore base class functionality
 		moving = (moveSpeed != 0);
 		Vector3 origin = transform.position + Vector3.up;
-		LayerMask gmask = Layers.GetGroundMask(true);
+		LayerMask gmask = Layers.GetSolidsMask(true);
 
 		CheckStack();
 		if (stackAbove != null) {
@@ -59,7 +59,7 @@ public class ConveyorMovement : Movement {
 					transform.position = v;
 					if (stackAbove != null) {
 						Debug.Log("Peace");
-						stackAbove.Unlink();
+						stackAbove.Unlink(true);
 					}
 				//	Unlink(Vector3.up);
 					EndLife();
@@ -141,8 +141,5 @@ public class ConveyorMovement : Movement {
 		}
 	}
 	
-	public override void  Unlink(){
- 		base.Unlink();
-		EndLife();
-	}
+
 }

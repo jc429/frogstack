@@ -185,7 +185,7 @@ public class GameManager : MonoBehaviour {
 			foreach(SpawnZone sz in spawnZones){
 				if(sz.Activated() && PMath.CloseTo(currentFrog.transform.position,sz.transform.position)){
 					Vector3 top = currentFrog.transform.position + currentFrog.DistanceToStackTop();
-					if(Physics.Raycast(top,Vector3.up,0.6f,Layers.GetGroundMask(false))){
+					if(Physics.Raycast(top,Vector3.up,0.6f,Layers.GetSolidsMask(false))){
 						//fail bc we hit ceiling
 						Debug.Log("theres a ceiling in the way");
 						return;
@@ -202,7 +202,7 @@ public class GameManager : MonoBehaviour {
 					foreach(FrogMovement f in oldFrogs){
 						if(PMath.CloseTo(f.transform.position,sz.transform.position)){
 							Vector3 top = f.transform.position + f.DistanceToStackTop();
-							if(Physics.Raycast(top,Vector3.up,0.6f,Layers.GetGroundMask(false))){
+							if(Physics.Raycast(top,Vector3.up,0.6f,Layers.GetSolidsMask(false))){
 								//fail bc we hit ceiling
 								Debug.Log("theres a ceiling in the way");
 								return;

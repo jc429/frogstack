@@ -4,15 +4,21 @@ using UnityEngine;
 
 public class PossessionGhost : TriggerObj {
 
-	[SerializeField]
-	float movespeed;
+	[SerializeField] [Range(-1,1)]
+	int moveDir;
+	float moveSpeed = 1f;
 
 	bool moving; 
 	FrogMovement targetFrog;
+	int facing;
 
+	SpriteRenderer _sprite;
 	// Use this for initialization
 	void Start () {
+		_sprite = GetComponentInChildren<SpriteRenderer>();
 		moving = true;
+		facing = moveDir;
+		_sprite.flipX = (facing < 0);
 	}
 	
 	// Update is called once per frame
@@ -23,18 +29,23 @@ public class PossessionGhost : TriggerObj {
 		}
 		if(moving){
 			Vector3 v = transform.position;
-			v.x += movespeed * Time.deltaTime;
+			v.x += moveDir * moveSpeed * Time.deltaTime;
 			transform.position = v;
+
+			Vector3 offset = Vector3.zero;
+			offset.y = 0.3f*Mathf.Sin(2*Time.time);
+			_sprite.transform.localPosition = offset;
+			
 		}
 		else{
 			if(targetFrog != null){
-				transform.position = Vector3.MoveTowards(transform.position,targetFrog.transform.position,Mathf.Abs(movespeed)*Time.deltaTime);
+				transform.position = Vector3.MoveTowards(transform.position,targetFrog.transform.position,Mathf.Abs(moveSpeed)*Time.deltaTime);
 			}
 		}
 	}
 
 	protected override void TriggerEnter(){
-		Debug.Log("Boo!");
+	//	Debug.Log("Boo!");
 		moving = false;
 		targetFrog = connectedFrog;
 	}

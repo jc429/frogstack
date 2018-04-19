@@ -71,7 +71,7 @@ public class DuckMovement : Movement {
 	}
 
 	bool BCheck(Vector3 dir) {
-		LayerMask gmask = Layers.GetGroundMask(true);
+		LayerMask gmask = Layers.GetSolidsMask(true);
 		LayerMask bmask = Layers.GetPuzzleObjectMask();
 		float raylen = 20;
 

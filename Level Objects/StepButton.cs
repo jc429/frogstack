@@ -8,8 +8,10 @@ public class StepButton : TriggerObj {
 	[SerializeField]
 	Sprite[] sprites;
 	
-	public bool requireHold;
-	public bool stayPressed;
+	[SerializeField]
+	bool requireHold;
+	[SerializeField]
+	bool stayPressed;
 	bool isPressed;
 
 	[SerializeField]

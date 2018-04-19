@@ -24,6 +24,7 @@ public class Movement : GameEntity {
 
 	// used for making the stack sway
 	bool sway = true;
+	bool allowSway;
 	Transform _sTransform; 
 
 	//currently unused but may end up being useful
@@ -31,15 +32,18 @@ public class Movement : GameEntity {
 	Vector3 prevpos;
 
 	//ok so this needs to be .2f for hopping stacks, but ignored/very short for stuff like conveyor belts 
-	const float rbDelay = 0.01f; 			//time to wait after unlinking before reactivating rigidbody physics
+	const float rbDelayShort = 0.01f; 			//time to wait after unlinking before reactivating rigidbody physics
+	const float rbDelayLong = 0.2f; 			//time to wait after unlinking before reactivating rigidbody physics
 	float rbDelayTimer = 0;
 
 	const float linkDelay = 0.1f;
 	float linkdelaytimer = 0;
 
+	Rigidbody r;
 
 	// Use this for initialization
 	protected void Start () {
+		r = GetComponent<Rigidbody>();
 		SpriteRenderer s = gameObject.GetComponentInChildren<SpriteRenderer>();
 		if(s == null){
 			sway = false;
@@ -54,12 +58,17 @@ public class Movement : GameEntity {
 	new protected void Update () {
 		prevpos = curPos;
 		curPos = transform.position;
+		
+		if(r && r.velocity.x != 0){
+			Debug.Log("vel broken" + r.velocity);
+			r.velocity = Vector3.zero;
+			
+		}
 
 		if(rbDelayTimer > 0){
 			rbDelayTimer -= Time.deltaTime;
 			if(rbDelayTimer <= 0){
 				rbDelayTimer = 0;
-				Rigidbody r = GetComponent<Rigidbody>();
 				//dont activate rigidbody if we found a new attachment
 				if (r && stackBelow == null) {		
 					r.isKinematic = false;
@@ -85,7 +94,7 @@ public class Movement : GameEntity {
 			//	Debug.Log("chugga");
 			if (stackAbove != null) {
 				Vector3 v = new Vector3(moveDir, 0, 0);
-				LayerMask gmask = Layers.GetGroundMask(true);
+				LayerMask gmask = Layers.GetSolidsMask(true);
 				if (Physics.Raycast(transform.position + Vector3.up, v, raylen, gmask)) {
 				//	Debug.Log("owie oof");
 				//	stackAbove.Unlink(Vector3.down);
@@ -138,7 +147,7 @@ public class Movement : GameEntity {
 
 	public void CheckStack() {
 	//	if (moving) return;
-		LayerMask gmask = Layers.GetGroundMask(false);
+		LayerMask gmask = Layers.GetSolidsMask(false);
 		RaycastHit r = new RaycastHit();
 		LayerMask stackMask = 0;
 		if (stackWithPuzzleObjects) {
@@ -211,7 +220,7 @@ public class Movement : GameEntity {
 	}
 
 	//always unlinks downward, call from upper member of stack
-	public virtual void Unlink() {
+	public void Unlink(bool forceShortDelay = false) {
 		if (stackBelow == null) {
 			Debug.Log("nothing to unlink");
 			return;
@@ -220,10 +229,21 @@ public class Movement : GameEntity {
 			stackBelow.stackAbove = null;
 		}
 		transform.parent = null;
+		Vector3 v = transform.position;
+		v.x = Mathf.RoundToInt(v.x);
+		transform.position = v;
+		if(r){
+			r.velocity = Vector3.zero;
+		}
 		stackBelow = null;
 	//	posoffset = Vector3.zero;
 		linkdelaytimer = linkDelay;
-		rbDelayTimer = rbDelay;
+		if(forceShortDelay){
+			rbDelayTimer = rbDelayShort;
+		}
+		else{
+			rbDelayTimer = rbDelayLong;
+		}
 		if(showStackLog){
 			Debug.Log("Unlinked successfully");
 		}
@@ -319,7 +339,25 @@ public class Movement : GameEntity {
 		return v;
 	}
 
+	public int CountToStackTop(){
+		int ct = 0;
+		Movement m = this;
+		while (m.stackAbove != null) {
+			ct += 1;
+			m = m.stackAbove;
+		}
+		return ct;
+	}
 
+	public int CountToStackBottom(){
+		int ct = 0;
+		Movement m = this;
+		while (m.stackBelow != null) {
+			ct -= 1;
+			m = m.stackBelow;
+		}
+		return ct;
+	}
 
 
 	public bool Grounded() {
@@ -328,9 +366,9 @@ public class Movement : GameEntity {
 		//	Debug.Log(groundmask.value);	
 		//groundmask = ~groundmask;	
 		//who the hell knows if you're supposed to invert the mask? not the documentation! gotta try both!
-		bool groundboysL = Physics.Raycast(transform.position + new Vector3(-0.425f, 0, 0), Vector3.down, 0.55f, Layers.GetGroundMask(false));
-		bool groundboysM = Physics.Raycast(transform.position, Vector3.down, 0.6f, Layers.GetGroundMask(false));
-		bool groundboysR = Physics.Raycast(transform.position + new Vector3(0.425f, 0, 0), Vector3.down, 0.55f, Layers.GetGroundMask(false));
+		bool groundboysL = Physics.Raycast(transform.position + new Vector3(-0.425f, 0, 0), Vector3.down, 0.55f, Layers.GetSolidsMask(false));
+		bool groundboysM = Physics.Raycast(transform.position, Vector3.down, 0.6f, Layers.GetSolidsMask(false));
+		bool groundboysR = Physics.Raycast(transform.position + new Vector3(0.425f, 0, 0), Vector3.down, 0.55f, Layers.GetSolidsMask(false));
 		groundboys = ((groundboysL && groundboysM) || (groundboysM && groundboysR));
 		//can't use transform.up either for god knows what reason, you gotta use Vector3's versions 
 		Debug.DrawRay(transform.position, 0.6f * Vector3.down, (groundboysM ? Color.green : Color.white));
@@ -342,9 +380,9 @@ public class Movement : GameEntity {
 	public bool GroundedWithoutFrogs() {
 		bool groundboys;
 
-		bool groundboysL = Physics.Raycast(transform.position + new Vector3(-0.425f, 0, 0), Vector3.down, 0.55f, Layers.GetGroundMaskNoFrogs());
-		bool groundboysM = Physics.Raycast(transform.position, Vector3.down, 0.6f, Layers.GetGroundMaskNoFrogs());
-		bool groundboysR = Physics.Raycast(transform.position + new Vector3(0.425f, 0, 0), Vector3.down, 0.55f, Layers.GetGroundMaskNoFrogs());
+		bool groundboysL = Physics.Raycast(transform.position + new Vector3(-0.425f, 0, 0), Vector3.down, 0.55f, Layers.GetSolidsMaskNoFrogs());
+		bool groundboysM = Physics.Raycast(transform.position, Vector3.down, 0.6f, Layers.GetSolidsMaskNoFrogs());
+		bool groundboysR = Physics.Raycast(transform.position + new Vector3(0.425f, 0, 0), Vector3.down, 0.55f, Layers.GetSolidsMaskNoFrogs());
 		groundboys = ((groundboysL && groundboysM) || (groundboysM && groundboysR));
 		return groundboys;
 	}

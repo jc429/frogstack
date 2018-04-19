@@ -10,8 +10,8 @@ public class FrogMovement : Movement {
 	[Range(0.1f, 3)]
 	public float speedMultiplier = 1f;
 
-	LayerMask gmask = Layers.GetGroundMask(true);
-	LayerMask platmask = Layers.GetGroundMask(false);
+	LayerMask gmask = Layers.GetSolidsMask(true);
+	LayerMask platmask = Layers.GetSolidsMask(false);
 
 	Rigidbody _rigidbody;
 	SpriteRenderer _sprite;
@@ -251,7 +251,7 @@ public class FrogMovement : Movement {
 						targpos = hopStart;
 					}
 				}
-				
+				//Debug.Log("tryna hop");
 				//if there is a solid wall in front of us, try to jump on top of it
 				if (Physics.Raycast(hopStart, new Vector3(targDir.x, 0, 0), raylen, gmask)) {
 					//if not at the ceiling

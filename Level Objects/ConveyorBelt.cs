@@ -107,7 +107,7 @@ public class ConveyorBelt : ButtonConnectedObj {
 	public void CreateConveyorMovement(Movement m) {
 		if (m.stackBelow != null) return;
 		if (m.moving) return;
-		LayerMask gmask = Layers.GetGroundMask(true);
+		LayerMask gmask = Layers.GetSolidsMask(true);
 	//	if (Physics.Raycast(m.transform.position, Vector3.right * (Mathf.Sign(moveSpeed)), 0.6f, gmask)) return;
 
 		ConveyorMovement cm = Instantiate(movPrefab) as ConveyorMovement;
@@ -136,7 +136,7 @@ public class ConveyorBelt : ButtonConnectedObj {
 			return;
 		}
 		if (!m.stackBelow /*&& moveSpeed != 0*/) {
-			LayerMask gmask = Layers.GetGroundMask(true);
+			LayerMask gmask = Layers.GetSolidsMask(true);
 			if(!Physics.Raycast(m.transform.position,Vector3.right*(Mathf.Sign(moveSpeed)),0.6f,gmask)){
 				CreateConveyorMovement(m);
 			}

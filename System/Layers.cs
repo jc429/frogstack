@@ -4,7 +4,7 @@ using UnityEngine;
 
 public static class Layers {
 
-	public static LayerMask GetGroundMask(bool ignorePlatforms) {
+	public static LayerMask GetSolidsMask(bool ignorePlatforms) {
 		LayerMask groundmask = 0;
 		//have fun hard coding layers here 
 		groundmask |= 1 << 0;	//default
@@ -16,7 +16,7 @@ public static class Layers {
 		return groundmask;
 	}
 
-	public static LayerMask GetGroundMaskNoFrogs() {
+	public static LayerMask GetSolidsMaskNoFrogs() {
 		LayerMask groundmask = 0;
 		groundmask |= 1 << 10;
 		groundmask |= 1 << 12;
