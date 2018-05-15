@@ -18,6 +18,7 @@ public class LevelPagesManager : MonoBehaviour {
 	bool moving;
 	float moveTime;
 	const float moveDuration = 0.6f;
+	int cycleDir;
 
 	void Awake() {
 		_rectTransform = GetComponent<RectTransform>();
@@ -53,9 +54,18 @@ public class LevelPagesManager : MonoBehaviour {
 			if (moveTime >= moveDuration) {
 				_rectTransform.localPosition = moveDest;
 				moving = false;
-			playButton.interactable = true;
-			backButton.interactable = (selectedPage > 0);
-			forwardButton.interactable = (selectedPage < levelPages.Length - 1);
+				playButton.interactable = true;
+				backButton.interactable = (selectedPage > 0);
+				forwardButton.interactable = (selectedPage < levelPages.Length - 1);
+				if(cycleDir > 0 && forwardButton.interactable){
+					forwardButton.Select();
+				} 
+				else if(cycleDir < 0 && backButton.interactable){
+					backButton.Select();
+				}
+				else{
+					playButton.Select();
+				}
 			//	MainMenuController.controllerInstance.SelectLevel(levelPages[selectedPage].GetComponent<LevelPage>().worldID, 1);
 			}
 		}
@@ -78,6 +88,6 @@ public class LevelPagesManager : MonoBehaviour {
 		moveDest = startingPosition + new Vector3(-1 * pageSeparation * selectedPage, 0);
 		moveTime = 0;
 		moving = true;
-
+		cycleDir = dir;
 	}
 }

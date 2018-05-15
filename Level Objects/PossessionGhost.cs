@@ -14,7 +14,7 @@ public class PossessionGhost : TriggerObj {
 
 	SpriteRenderer _sprite;
 	// Use this for initialization
-	void Start () {
+	protected override void Start2 () {
 		_sprite = GetComponentInChildren<SpriteRenderer>();
 		moving = true;
 		facing = moveDir;
@@ -47,7 +47,7 @@ public class PossessionGhost : TriggerObj {
 	protected override void TriggerEnter(){
 	//	Debug.Log("Boo!");
 		moving = false;
-		targetFrog = connectedFrog;
+		targetFrog = connectedFrogs[0];
 	}
 	
 }

@@ -41,6 +41,8 @@ public class MainMenuController : MonoBehaviour {
 	[SerializeField] 
 	Sprite gemSpriteInactive;
 
+	[SerializeField]
+	Button firstButton;
 
 	void Awake() {
 		if (controllerInstance == null) {
@@ -128,6 +130,7 @@ public class MainMenuController : MonoBehaviour {
 
 	public void EnterLevelSelectAnim() {
 		animating = true;
+		firstButton.Select();
 		animTime = 0;
 	}
 
@@ -138,6 +141,7 @@ public class MainMenuController : MonoBehaviour {
 		UpdateLevelInfo();
 	//	Debug.Log("Level " + selectedWorld + "-" + selectedLevel + " selected.");
 	}
+
 
 	public void LoadSelectedLevel(){
 		if (selectedWorld == 0 || selectedLevel == 0) {

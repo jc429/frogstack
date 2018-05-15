@@ -39,8 +39,10 @@ public static class TransitionManager{
 			screenTransition.StartTransitionOut();
 			sceneTransitioning = true;
 			sceneDest = dest;
+		//	Debug.Log("Transitioning to " + dest);
 		}
-		else if(!sceneTransitioning){
+		else if(!sceneTransitioning){	//if we dont have a screentransition, just reload the scene ??
+			Debug.Log("Transition camera not found");
 			SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
 		}
 	}
@@ -59,11 +61,11 @@ public static class TransitionManager{
 				break;
 
 			case SceneDest.SD_MainMenu:
-				SceneManager.LoadScene(0);
+				SceneManager.LoadScene(Config.mainMenuSceneNo);
 				break;
 
 			case SceneDest.SD_GameEnd:
-				SceneManager.LoadScene(1);
+				SceneManager.LoadScene(Config.gameEndSceneNo);
 				break;
 
 			default:

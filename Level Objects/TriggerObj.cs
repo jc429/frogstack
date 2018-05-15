@@ -8,11 +8,13 @@ public class TriggerObj : MonoBehaviour {
 	protected bool isActive = false;
 	protected bool prevActive = false;
 
-	protected FrogMovement connectedFrog = null;
+
+	protected List<FrogMovement> connectedFrogs = new List<FrogMovement>();
 
 	// Use this for initialization
 	void Start () {
-		
+		connectedFrogs = new List<FrogMovement>();
+		Start2();
 	}
 	
 	// Update is called once per frame
@@ -32,21 +34,23 @@ public class TriggerObj : MonoBehaviour {
 		}
 	}
 
-	protected virtual void Update2(){
-
-	}
+	protected virtual void Start2(){}
+	protected virtual void Update2(){}
 
 	void OnTriggerEnter(Collider other) {
-		
-		if(other.gameObject.GetComponentInParent<FrogMovement>() != null && connectedFrog == null){
+		FrogMovement fm = other.gameObject.GetComponentInParent<FrogMovement>();
+		if(fm != null && !connectedFrogs.Contains(fm)){
+			connectedFrogs.Add(fm);
 			objs++;
-			connectedFrog = other.gameObject.GetComponentInParent<FrogMovement>();
+		//	connectedFrog = other.gameObject.GetComponentInParent<FrogMovement>();
 		}
 	}
 	void OnTriggerExit(Collider other) {
-		if(other.gameObject.GetComponentInParent<FrogMovement>() == connectedFrog && connectedFrog != null){
+		FrogMovement fm = other.gameObject.GetComponentInParent<FrogMovement>();
+		if(fm != null && connectedFrogs.Contains(fm)){
+			connectedFrogs.Remove(fm);
 			objs--;
-			connectedFrog = null;
+		//	connectedFrog = null;
 		}
 	}
 

@@ -44,7 +44,9 @@ public class ScreenTransition : MonoBehaviour {
 	// Update is called once per frame
 	void Update() {
 #if UNITY_EDITOR
-		transitionTime = transitionDuration;
+		if(Config.skipTransitions){
+			transitionTime = transitionDuration;
+		}
 #endif
 		if (animating) {
 			transitionTime += Time.deltaTime;

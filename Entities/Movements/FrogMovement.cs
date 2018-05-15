@@ -532,7 +532,7 @@ public class FrogMovement : Movement {
 	}
 
 	void OnMouseDown() {
-		if (GameManager._allowFrogClicking && !IsInMotion()) {
+		if (Config.allowFrogClicking && !IsInMotion()) {
 			GameManager.managerInstance.SetCurrentFrog(this);
 		}
 	}

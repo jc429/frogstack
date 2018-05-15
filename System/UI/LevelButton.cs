@@ -35,7 +35,14 @@ public class LevelButton : MonoBehaviour {
 	public void LoadAssignedLevel() {
 		if (isLocked) return;
 		//LevelManager.LoadLevel(_levelPage.worldID, levelID);
-		MainMenuController.controllerInstance.SelectLevel(_levelPage.worldID, levelID);
+
+		if(MainMenuController.controllerInstance.selectedWorld == _levelPage.worldID 
+		&& MainMenuController.controllerInstance.selectedLevel == levelID){
+			MainMenuController.controllerInstance.LoadSelectedLevel();
+		}
+		else{
+			MainMenuController.controllerInstance.SelectLevel(_levelPage.worldID, levelID);
+		}
 	}
 
 }

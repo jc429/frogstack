@@ -5,16 +5,12 @@ using UnityEngine;
 public class NoSpawn : TriggerObj {
 	GameManager gameManager;
 	// Use this for initialization
-	void Start () {
+	protected override void Start2 () {
 		gameManager = GameObject.FindGameObjectWithTag("GameController").GetComponent<GameManager>();
 		gameManager.AddNoSpawnZone(this);
 		objs = 0;
 	}
 
-	void Awake(){
-		
-	}
-	
 	// Update is called once per frame
 	void Update () {
 		

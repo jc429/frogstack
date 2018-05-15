@@ -12,11 +12,10 @@ public class Gem : TriggerObj {
 	Sprite[] sprites;
 
 	// Use this for initialization
-	void Start () {
+	protected override void Start2 () {
 		_sprite = GetComponentInChildren<SpriteRenderer>();
 		_audio = GetComponent<AudioSource>();
 		_sprite.sprite = sprites[0];
-		connectedFrog = null;
 		GameManager.managerInstance.RegisterGem(this);
 	}
 	

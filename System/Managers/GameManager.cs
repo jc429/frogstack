@@ -8,14 +8,12 @@ using UnityEngine.SceneManagement;
 //TODO: Clean this bad boy UP 
 public class GameManager : MonoBehaviour {
 	public const int _levelCeiling = 10;				//max height allowed 
-	public const bool _allowFrogClicking = true;		//allow player to click on frogs to switch control to them (debug tool)
 	public const bool _restartOnLevelCompletion = true;
 	const bool ERASE_ALL_DATA_ON_START = false;
 	public static bool DEBUG_MODE = true;
 	
 	public static GameManager managerInstance;			//the active instance of the game manager
 	AudioManager audioManager;
-
 
 	[SerializeField]
 	GameObject frogPrefab;								//frog prefab (i.e. what we spawn/play as)
@@ -177,6 +175,9 @@ public class GameManager : MonoBehaviour {
 	}
 
 	void AttemptSpawn(){
+		if(spawnZones.Count <= 0){
+			return;
+		}
 		if(currentFrog == null){
 			SpawnFrog(spawnPos);
 		}

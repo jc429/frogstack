@@ -29,7 +29,7 @@ public class Movement : GameEntity {
 
 	//currently unused but may end up being useful
 	Vector3 curPos;
-	Vector3 prevpos;
+	Vector3 prevPos;
 
 	//ok so this needs to be .2f for hopping stacks, but ignored/very short for stuff like conveyor belts 
 	const float rbDelayShort = 0.01f; 			//time to wait after unlinking before reactivating rigidbody physics
@@ -56,7 +56,7 @@ public class Movement : GameEntity {
 	
 	// Update is called once per frame
 	new protected void Update () {
-		prevpos = curPos;
+		prevPos = curPos;
 		curPos = transform.position;
 		
 		if(r && r.velocity.x != 0){
@@ -132,8 +132,10 @@ public class Movement : GameEntity {
 			float offx = 0;
 			float offy = 0;
 			float snapSpeed = 0.5f * height;
+			int dir = 0;
+			dir = PMath.GetSign(stackBelow.curPos.x - stackBelow.prevPos.x);
 			if(StackMoving()){
-				offx = height * height * -0.025f * moveDir;
+				offx = height * height * -0.025f * dir;
 				offx = Mathf.Clamp(offx,-0.5f,0.5f);
 			}
 			else{
