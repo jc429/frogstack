@@ -38,6 +38,10 @@ public class Spring : MonoBehaviour {
 
 	
 	void OnTriggerEnter(Collider other) {
+		if(other.transform.position.y < transform.position.y){
+			return;
+		}
+
 		objs++;
 		if(other.gameObject.GetComponentInParent<FrogMovement>() != null){
 			connectedFrog = other.gameObject;
@@ -46,10 +50,10 @@ public class Spring : MonoBehaviour {
 	}
 	void OnTriggerExit(Collider other) {
 		objs--;
-		connectedFrog = null;
-		if(_audio != null){
+		if(_audio != null && connectedFrog != null){
 			_audio.Play();
 		}
+		connectedFrog = null;
 	}
 
 	public bool Pressed() {
